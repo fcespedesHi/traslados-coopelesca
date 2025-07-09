@@ -1,0 +1,28 @@
+{
+  "almacenes": [
+    {
+      "id": 1,
+      "nombre": "Almacén San Roque",
+      "direccion": "Calle 123",
+      "telefono": "1234567890"
+    },
+    {
+      "id": 2,
+      "nombre": "Almacén Llanada",
+      "direccion": "Calle 456",
+      "telefono": "1234567890"
+    },
+    {
+      "id": 3,
+      "nombre": "Almacén TVN 14",
+      "direccion": "Calle 789",
+      "telefono": "1234567890"
+    },
+    {
+      "id": 4,
+      "nombre": "Almacén Rojas y Roriguez",
+      "direccion": "Calle 789",
+      "telefono": "1234567890"
+    }
+  ]
+}
