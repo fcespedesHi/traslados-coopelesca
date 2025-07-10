@@ -46,67 +46,67 @@ const navigationData = {
       items: [
         {
           title: "Crear solicitud",
-          url: "#",
+          url: "/solicitudes/crear",
           isActive: true,
         },
         {
           title: "Aprobar Solicitudes",
-          url: "#",
+          url: "/solicitudes/aprobar",
           isActive: false,
         },
         {
           title: "Alistar Materiales",
-          url: "#",
+          url: "/solicitudes/alistar",
           isActive: false,
         },
         {
           title: "Entregar Materiales",
-          url: "#",
+          url: "/solicitudes/entregar",
           isActive: false,
         },        {
           title: "Confirmar Recepción de Materiales",
-          url: "#",
+          url: "/solicitudes/confirmar",
           isActive: false,
         },
       ],
     },
     {
       title: "Traslado entre Almacenes",
-      url: "#",
+      url: "/traslados",
       icon: Package,
       items: [
         {
           title: "Crear Solicitud de Traslado",
-          url: "#",
+          url: "/traslados/crear",
           isActive: false,
         },
         {
           title: "Confirmar Recepción de Traslado",
-          url: "#",
+          url: "/traslados/confirmar",
           isActive: false,
         },
       ],
     },
     {
       title: "Devolución de Materiales",
-      url: "#",
+      url: "/devoluciones",
       icon: Building2,
       items: [
         {
           title: "Crear Solicitud de Devolución",
-          url: "#",
+          url: "/devoluciones/crear",
           isActive: false,
         },
         {
           title: "Confirmar Recepción de Devolución",
-          url: "#",
+          url: "/devoluciones/confirmar",
           isActive: false,
         }
       ],
     },
     {
       title: "Consulta de Solicitudes",
-      url: "#",
+      url: "/consultas",
       icon: Truck,
     }
   ],

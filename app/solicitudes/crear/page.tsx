@@ -46,9 +46,7 @@ function CreateRequestPage() {
   // Estado global de artículos seleccionados
   const [selectedArticles, setSelectedArticles] = useState<Article[]>([]);
 
-
-
-
+  //funciones para guardar, solicitar aprobación, enviar y eliminar solicitud
   const handleSave = () => {
     console.log("Guardando solicitud...");
     // Aquí iría la lógica para guardar
@@ -69,6 +67,15 @@ function CreateRequestPage() {
     // Aquí iría la lógica para eliminar
   };
 
+  //funcion que actualiza los productos cuando cambia el almacen de origen
+  useEffect(() => {
+    handleLoadProducts();
+  }, [almacenOrigen]);
+
+  const handleLoadProducts = () => {
+    console.log("Cargando productos...");
+  }
+
   // Agregar artículo (desde la tabla)
   const handleAddArticle = (article: Article) => {
     setSelectedArticles((prev) => {
@@ -83,11 +90,15 @@ function CreateRequestPage() {
       }
       return [...prev, article];
     });
+    //autoguardar cada que se agrega un artículo
+    handleSave();
   };
 
   // Quitar artículo (desde el sidebar)
   const handleRemoveArticle = (id: string) => {
     setSelectedArticles((prev) => prev.filter((a) => a.id !== id));
+    //autoguardar cada que se quita un artículo
+    handleSave();
   };
 
   return (
@@ -165,11 +176,17 @@ function CreateRequestPage() {
 
       <RequestItemsDetail articles={selectedArticles} onRemove={handleRemoveArticle} />
 
-      <div className="flex justify-end space-x-2">
-        <Button className="bg-linear-to-b from-[#DC2626] to-[#C11F1F] text-white">Eliminar</Button>
-        <Button className="bg-white text-black border">Guardar</Button>
-        <Button disabled={selectedArticles.length === 0} className="bg-gradient-to-b from-[#004F9F] to-[#003871] text-white">Solicitar Aprobación</Button>
-        <Button disabled={selectedArticles.length === 0} className="bg-gradient-to-b from-[#004F9F] to-[#003871] text-white">Enviar</Button>
+      {/* Espacio para evitar que el contenido se oculte detrás de los botones fijos */}
+      <div className="h-20"></div>
+      
+      {/* Botones fijos en la parte inferior */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50">
+        <div className="max-w-7xl mx-auto flex justify-end space-x-2">
+          <Button className="bg-linear-to-b from-[#DC2626] to-[#C11F1F] text-white">Eliminar</Button>
+          <Button className="bg-white text-black border">Guardar</Button>
+          <Button disabled={selectedArticles.length === 0} className="bg-gradient-to-b from-[#004F9F] to-[#003871] text-white">Solicitar Aprobación</Button>
+          <Button disabled={selectedArticles.length === 0} className="bg-gradient-to-b from-[#004F9F] to-[#003871] text-white">Enviar</Button>
+        </div>
       </div>
     </div>
   );
