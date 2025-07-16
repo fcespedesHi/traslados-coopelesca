@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useEffect, useState } from "react"
 import ErrorAlert from "./error-alert"
+import data from "@/lib/mock_user_sim.json"
 
 interface RequestDetailProps {
   requestCode?: string
@@ -16,13 +17,6 @@ interface RequestDetailProps {
   readOnly?: boolean
 }
 
-const companies = [
-  { value: "CPL", label: "CPL - COOPELESCA R.L." },
-  { value: "HDJ", label: "HDJ - HIDROELECT. DOÑA JULIA SRL" },
-  { value: "CCU", label: "CCU - CONSORCIO COOP. CUBUJUQUI R.L." },
-  { value: "TVN", label: "TVN - T.V. NORTE CANAL CATORCE S.A." },
-  { value: "GEG", label: "GEG - GREEN ENERGY GROUP" },
-]
 
 export function RequestDetail({
   requestCode = "2351",
@@ -36,10 +30,10 @@ export function RequestDetail({
   const [showError, setShowError] = useState(false);
 
   useEffect(() => {
-    if (companies.length > 0) {
+    if (data.companies.length <= 0) {
       setShowError(true);
     }
-  }, [companies]);
+  }, [data.companies]);
   return (
     <div className="space-y-6">
       {showError && (
@@ -90,7 +84,7 @@ export function RequestDetail({
               <SelectValue placeholder="Selecciona una compañía" />
             </SelectTrigger>
             <SelectContent>
-              {companies.map((comp) => (
+              {data.companies.map((comp) => (
                 <SelectItem key={comp.value} value={comp.value}>
                   {comp.label}
                 </SelectItem>

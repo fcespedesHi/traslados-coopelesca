@@ -57,6 +57,8 @@ interface ItemDetail {
   location: string;
   batch: string;
   available: number;
+  quantity: number; // Cantidad requerida para cada sub-item
+  defaultQuantity?: number; // Cantidad por defecto para este sub-item
 }
 
 interface CreateTransferTableProps {
@@ -64,7 +66,10 @@ interface CreateTransferTableProps {
     id: string;
     code: string;
     name: string;
+    description: string;
+    balance: number | null;
     quantity: number;
+    subRows?: ItemDetail[];
   }) => void;
 }
 
@@ -88,8 +93,16 @@ const makeData = (): Item[] => [
         location: "2-2100",
         batch: "GRAPA DE HORQUILLA, CERCA DE 1 1/4 X 9",
         available: 50,
+        quantity: 0, // Se inicializará con defaultQuantity
+        defaultQuantity: 14,
       },
-      { location: "	2-2100", batch: "GRAPA CONEXION A VARILLA", available: 50 },
+      { 
+        location: "2-2100", 
+        batch: "GRAPA CONEXION A VARILLA", 
+        available: 50,
+        quantity: 0, // Se inicializará con defaultQuantity
+        defaultQuantity: 6,
+      },
     ],
   },
   {
@@ -105,7 +118,13 @@ const makeData = (): Item[] => [
     name: "2-2150",
     description: "POSTES DE MADERA 30 PIES,...",
     balance: 14,
-    subRows: [{ location: "Patio Exterior", batch: "LOTE-P01", available: 14 }],
+    subRows: [{ 
+      location: "Patio Exterior", 
+      batch: "LOTE-P01", 
+      available: 14,
+      quantity: 0, // Se inicializará con defaultQuantity
+      defaultQuantity: 1,
+    }],
   },
   {
     id: "5",
@@ -192,23 +211,30 @@ export function CreateTransferTable({
           />
         </div>
       ),
+      size: 50,
     },
     {
       accessorKey: "code",
       header: "Código",
+      cell: ({ getValue }) => (
+        <div className="min-w-[80px] max-w-[120px] truncate">
+          {getValue<string>()}
+        </div>
+      ),
+      size: 120,
     },
     {
       accessorKey: "description",
       header: "Descripción",
       cell: ({ row, getValue }) => (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 min-w-[200px] max-w-[300px]">
           {row.getCanExpand() ? (
             <button
               {...{
                 onClick: row.getToggleExpandedHandler(),
                 style: { cursor: "pointer" },
               }}
-              className="p-1"
+              className="p-1 flex-shrink-0"
             >
               <ChevronRight
                 className={cn(
@@ -218,78 +244,108 @@ export function CreateTransferTable({
               />
             </button>
           ) : (
-            <p></p>
+            <div className="w-6 flex-shrink-0"></div>
           )}
           <p
-            className={`${
+            className={cn(
+              "truncate",
               row.getCanExpand() ? "font-bold text-[#004F9F] underline" : ""
-            }`}
+            )}
           >
             {getValue<string>()}
           </p>
         </div>
       ),
+      size: 300,
     },
     {
       accessorKey: "balance",
       header: "Saldo",
       cell: ({ getValue }) => {
         const value = getValue<number | null>();
-        return value === null ? "-" : value;
+        return (
+          <div className="min-w-[60px] text-center">
+            {value === null ? "-" : value}
+          </div>
+        );
       },
+      size: 80,
     },
     {
       id: "quantity",
       header: "Cantidad",
       cell: ({ row }) => (
-        <Input
+        <div className="min-w-[100px]">
+                  <Input
           type="number"
-          placeholder="Cantidad"
-          className="w-26"
-          min={0}
+          placeholder="1"
+          className="w-full min-w-[80px] max-w-[120px]"
+          min={1}
           value={quantities[row.original.id] || ""}
           onChange={(e) => {
             const value = parseInt(e.target.value, 10);
             setQuantities((q) => ({
               ...q,
-              [row.original.id]: isNaN(value) ? 1 : value,
+              [row.original.id]: Math.max(1, isNaN(value) ? 1 : value),
             }));
           }}
         />
+        </div>
       ),
+      size: 120,
     },
     {
       id: "actions",
       cell: ({ row }) => (
-        <Button
-          size="sm"
-          className="bg-gradient-to-b from-[#1A8754] to-[#17784B] hover:bg-green-700"
-          disabled={quantities[row.original.id] < 0 || quantities[row.original.id] === undefined || quantities[row.original.id] === 0}
-          onClick={() => {
-            if (onAddArticle) {
-              onAddArticle({
-                id: row.original.id,
-                code: row.original.code,
-                name: row.original.name,
-                quantity: quantities[row.original.id] || 1,
-              });
-              toast.success("Artículo agregado correctamente", {
-                description: (
-                  <p className="text-sm text-[#1A8754]">
-                    El artículo ha sido agregado correctamente al detalle de la
-                    solicitud.
-                  </p>
-                ),
-                position: "top-right",
-                duration: 3000,
-                icon: <CheckCircleIcon className="w-4 h-4 text-[#1A8754]" />,
-              });
-            }
-          }}
-        >
-          <PlusIcon />
-        </Button>
+        <div className="min-w-[60px] flex justify-center">
+          <Button
+            size="sm"
+            className="bg-gradient-to-b from-[#1A8754] to-[#17784B] hover:bg-green-700"
+            disabled={quantities[row.original.id] < 1 || quantities[row.original.id] === undefined}
+            onClick={() => {
+              if (onAddArticle) {
+                const selectedQuantity = Math.max(1, quantities[row.original.id] || 1);
+                
+                // Si es un producto compuesto, inicializar las cantidades de los hijos
+                let processedSubRows = row.original.subRows;
+                if (row.original.subRows && row.original.subRows.length > 0) {
+                  processedSubRows = row.original.subRows.map(subRow => ({
+                    ...subRow,
+                    quantity: subRow.defaultQuantity || 1, // Forzar que quantity = defaultQuantity
+                    defaultQuantity: subRow.defaultQuantity || 1,
+                  }));
+                }
+
+                const articleToAdd = {
+                  id: row.original.id,
+                  code: row.original.code,
+                  name: row.original.name,
+                  description: row.original.description,
+                  balance: row.original.balance,
+                  quantity: selectedQuantity,
+                  subRows: processedSubRows,
+                };
+                console.log('Adding article with subRows:', articleToAdd);
+                onAddArticle(articleToAdd);
+                toast.success("Artículo agregado correctamente", {
+                  description: (
+                    <p className="text-sm text-[#1A8754]">
+                      El artículo ha sido agregado correctamente al detalle de la
+                      solicitud.
+                    </p>
+                  ),
+                  position: "top-right",
+                  duration: 3000,
+                  icon: <CheckCircleIcon className="w-4 h-4 text-[#1A8754]" />,
+                });
+              }
+            }}
+          >
+            <PlusIcon />
+          </Button>
+        </div>
       ),
+      size: 80,
     },
   ];
 
@@ -321,45 +377,81 @@ export function CreateTransferTable({
   };
 
   return (
-    <div className="w-full space-y-4 px-10">
-      <h2 className="text-xl font-bold">Artículos en el Almacén</h2>
+    <div className="w-full space-y-4 px-2 sm:px-4 md:px-6 lg:px-10">
+      <h2 className="text-lg sm:text-xl font-bold">Artículos en el Almacén</h2>
+      
+      {/* Filtros responsive */}
       <div className="flex flex-col sm:flex-row gap-3">
-        <div className="flex-1 relative ">
+        <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
             placeholder="Código, descripción, ubicación"
-            className="pl-10 bg-white max-w-md"
+            className="pl-10 bg-white w-full"
             value={globalFilter}
             onChange={(e) => setGlobalFilter(e.target.value)}
           />
         </div>
         <Button
-          className="bg-gradient-to-b from-[#004F9F] to-[#003871] text-white px-6"
+          className="bg-gradient-to-b from-[#004F9F] to-[#003871] text-white px-4 sm:px-6 w-full sm:w-auto"
           onClick={() => table.setGlobalFilter(globalFilter)}
         >
           Buscar
         </Button>
+      </div>
+
+      {/* Dropdown de filtros */}
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
-              className="flex items-center gap-2 bg-transparent w-full sm:w-auto justify-center bg-white"
+              className="w-full sm:w-auto justify-between"
             >
               <Filter className="h-4 w-4" />
-              <span>{sortDescription}</span>
+              {sortDescription}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="start" className="w-full sm:w-auto">
             <DropdownMenuItem
-              onSelect={() => applySort([], "Filtrar catálogo")}
+              onClick={() =>
+                applySort(
+                  [
+                    {
+                      id: "code",
+                      desc: false,
+                    },
+                  ],
+                  "Código (A-Z)"
+                )
+              }
             >
-              Quitar filtro
+              Código (A-Z)
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() =>
+                applySort(
+                  [
+                    {
+                      id: "code",
+                      desc: true,
+                    },
+                  ],
+                  "Código (Z-A)"
+                )
+              }
+            >
+              Código (Z-A)
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onSelect={() =>
+              onClick={() =>
                 applySort(
-                  [{ id: "description", desc: false }],
+                  [
+                    {
+                      id: "description",
+                      desc: false,
+                    },
+                  ],
                   "Descripción (A-Z)"
                 )
               }
@@ -367,9 +459,14 @@ export function CreateTransferTable({
               Descripción (A-Z)
             </DropdownMenuItem>
             <DropdownMenuItem
-              onSelect={() =>
+              onClick={() =>
                 applySort(
-                  [{ id: "description", desc: true }],
+                  [
+                    {
+                      id: "description",
+                      desc: true,
+                    },
+                  ],
                   "Descripción (Z-A)"
                 )
               }
@@ -378,35 +475,47 @@ export function CreateTransferTable({
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onSelect={() =>
+              onClick={() =>
                 applySort(
-                  [{ id: "balance", desc: true }],
-                  "Saldo (Mayor a menor)"
+                  [
+                    {
+                      id: "balance",
+                      desc: false,
+                    },
+                  ],
+                  "Saldo (Menor a Mayor)"
                 )
               }
             >
-              Saldo (Mayor a menor)
+              Saldo (Menor a Mayor)
             </DropdownMenuItem>
             <DropdownMenuItem
-              onSelect={() =>
+              onClick={() =>
                 applySort(
-                  [{ id: "balance", desc: false }],
-                  "Saldo (Menor a mayor)"
+                  [
+                    {
+                      id: "balance",
+                      desc: true,
+                    },
+                  ],
+                  "Saldo (Mayor a Menor)"
                 )
               }
             >
-              Saldo (Menor a mayor)
+              Saldo (Mayor a Menor)
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <div className="rounded-md border bg-[#FFFFFF]">
+
+      {/* Tabla con scroll */}
+      <div className="rounded-md border bg-[#FFFFFF] overflow-hidden">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
+                  <TableHead key={header.id} style={{ width: header.getSize() }}>
                     {header.isPlaceholder
                       ? null
                       : flexRender(
@@ -426,7 +535,7 @@ export function CreateTransferTable({
                   className={cn(row.getIsExpanded() && "border-b-0")}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} style={{ width: cell.column.getSize() }}>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -446,8 +555,10 @@ export function CreateTransferTable({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-between text-sm text-gray-600">
-        <div className="text-[#64748B]">
+      
+      {/* Paginación responsive */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-600">
+        <div className="text-[#64748B] text-center sm:text-left">
           Mostrando {table.getRowModel().rows.length} de {data.length} artículos
         </div>
         <div className="flex items-center gap-2">
@@ -459,7 +570,7 @@ export function CreateTransferTable({
           >
             Anterior
           </Button>
-          <span className="text-[#64748B]">
+          <span className="text-[#64748B] px-2">
             {table.getState().pagination.pageIndex + 1} de{" "}
             {table.getPageCount()}
           </span>

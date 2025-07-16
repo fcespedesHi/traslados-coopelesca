@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/select";
 import { Autocomplete } from "./autocomplete";
 import { Textarea } from "./ui/textarea";
+import { useEffect, useState } from "react";
 
 // Función para formatear fecha en dd/mm/yyyy hh:mm
 function formatDate(date: Date): string {
@@ -23,6 +24,8 @@ function formatDate(date: Date): string {
   return `${day}/${month}/${year} ${hours}:${minutes}`;
 }
 
+import data from "@/lib/mock_user_sim.json"
+
 interface RequestDataProps {
   almacenOrigen?: string;
   almacenDestino?: string;
@@ -32,39 +35,74 @@ interface RequestDataProps {
   estado?: string;
   observaciones?: string;
   ordenTrabajo?: string;
+  company?: string; // Nueva prop para la compañía
   onAlmacenOrigenChange?: (value: string) => void;
   onAlmacenDestinoChange?: (value: string) => void;
   onProyectoChange?: (value: string) => void;
   readOnly?: boolean;
 }
 
-const almacenes = [
-  { value: "ALM001", label: "Almacén Central - San José" },
-  { value: "ALM002", label: "Almacén Norte - Alajuela" },
-  { value: "ALM003", label: "Almacén Sur - Cartago" },
-  { value: "ALM004", label: "Almacén Este - Limón" },
-  { value: "ALM005", label: "Almacén Oeste - Puntarenas" },
-  { value: "ALM006", label: "Almacén Regional Guanacaste" },
-  { value: "ALM007", label: "Almacén Heredia Centro" },
-  { value: "ALM008", label: "Almacén Pérez Zeledón" },
-  { value: "ALM009", label: "Almacén Liberia" },
-  { value: "ALM010", label: "Almacén Turrialba" },
-];
-
 export function RequestData({
   almacenOrigen = "",
   almacenDestino = "",
   proyecto = "",
   fechaCreacion = formatDate(new Date()),
-  creadoPor = "RCHAVARRIA",
+  creadoPor = data.user,
   estado = "Creada",
   ordenTrabajo = "",
+  company = "CPL", // Valor por defecto
   onAlmacenOrigenChange,
   onAlmacenDestinoChange,
   onProyectoChange,
   observaciones = "",
   readOnly = false,
 }: RequestDataProps) {
+  const [almacenesOrigen, setAlmacenesOrigen] = useState<Array<{value: string, label: string}>>([]);
+  const [almacenesDestino, setAlmacenesDestino] = useState<Array<{value: string, label: string}>>([]);
+
+  // Función para obtener los almacenes según la compañía seleccionada
+  const getAlmacenesByCompany = (companyCode: string) => {
+    const selectedCompany = data.companies.find(comp => comp.value === companyCode);
+    if (selectedCompany) {
+      return {
+        origen: selectedCompany.alms_org || [],
+        destino: selectedCompany.alm_destino || []
+      };
+    }
+    return { origen: [], destino: [] };
+  };
+
+  // Efecto para actualizar los almacenes cuando cambia la compañía
+  useEffect(() => {
+    const { origen, destino } = getAlmacenesByCompany(company);
+    setAlmacenesOrigen(origen);
+    setAlmacenesDestino(destino);
+    
+    // Limpiar los valores seleccionados cuando cambia la compañía
+    if (onAlmacenOrigenChange) onAlmacenOrigenChange("");
+    if (onAlmacenDestinoChange) onAlmacenDestinoChange("");
+  }, [company, onAlmacenOrigenChange, onAlmacenDestinoChange]);
+
+  // Efecto para filtrar almacenes de destino cuando cambia el almacén de origen
+  useEffect(() => {
+    const { origen, destino } = getAlmacenesByCompany(company);
+    setAlmacenesOrigen(origen);
+    
+    // Filtrar almacenes de destino excluyendo el almacén de origen seleccionado
+    if (almacenOrigen) {
+      const almacenesDestinoFiltrados = destino.filter(alm => alm.value !== almacenOrigen);
+      setAlmacenesDestino(almacenesDestinoFiltrados);
+      
+      // Si el almacén de destino actual es igual al de origen, limpiarlo
+      if (almacenDestino === almacenOrigen && onAlmacenDestinoChange) {
+        onAlmacenDestinoChange("");
+      }
+    } else {
+      // Si no hay almacén de origen seleccionado, mostrar todos los de destino
+      setAlmacenesDestino(destino);
+    }
+  }, [almacenOrigen, company, almacenDestino, onAlmacenDestinoChange]);
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-[#F9F9F9] p-6">
@@ -121,7 +159,7 @@ export function RequestData({
               Almacén origen
             </Label>
             <Autocomplete
-              options={almacenes}
+              options={almacenesOrigen}
               placeholder="Selecciona un almacén"
               value={almacenOrigen}
               onValueChange={onAlmacenOrigenChange}
@@ -136,7 +174,7 @@ export function RequestData({
               Almacén destino
             </Label>
             <Autocomplete
-              options={almacenes}
+              options={almacenesDestino}
               placeholder="Selecciona un almacén"
               value={almacenDestino}
               onValueChange={onAlmacenDestinoChange}

@@ -1,0 +1,38 @@
+{
+  "name": "Maria Rodríguez",
+  "user": "MRODRIGUEZ",
+  "companies": [
+    {
+      "value": "CPL",
+      "label": "CPL - COOPELESCA R.L.",
+      "alms_org": [
+        { "value": "002-CUADRI", "label": "Cuadrilla 002" },
+        { "value": "004-SEDE", "label": "Sede 004" }
+      ],
+      "alm_destino": [
+        { "value": "002-CUADRI", "label": "Cuadrilla 002" },
+        { "value": "006-SEDE", "label": "Sede 006" },
+        { "value": "007-SEDE", "label": "Sede 007" },
+        { "value": "009-CUADRI", "label": "Cuadrilla 009" }
+      ]
+    },
+    {
+      "value": "GEG",
+      "label": "GEG - GREEN ENERGY GROUP",
+      "alms_org": [
+        { "value": "GEG-CEDRAL", "label": "Cedral GEG" },
+        { "value": "003-CUADRI", "label": "Cuadrilla 003" }
+      ],
+      "alm_destino": [
+        { "value": "004-SEDE", "label": "Sede GEG 004" },
+        { "value": "012-CUADRI", "label": "Cuadrilla 012" }
+      ]
+    },
+    {
+      "value": "TEST",
+      "label": "TEST - Empresa de Prueba",
+      "alms_org": [{ "value": "TEST-001", "label": "Test Almacén 1" }],
+      "alm_destino": [{ "value": "TEST-002", "label": "Test Almacén 2" }]
+    }
+  ]
+}
