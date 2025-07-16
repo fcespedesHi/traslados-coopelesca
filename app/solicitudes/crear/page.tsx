@@ -1,6 +1,5 @@
 "use client";
-import { RequestDetail } from "@/components/request-detail";
-import { RequestData } from "@/components/request-data";
+import { RequestForm } from "@/components/request-form";
 import { useEffect, useState } from "react";
 import { CreateTransferTable } from "@/components/create-transfer-table";
 import ErrorAlert from "@/components/error-alert";
@@ -92,6 +91,8 @@ function CreateRequestPage() {
   useEffect(() => {
     handleLoadProducts();
   }, [almacenOrigen]);
+
+
 
   const handleLoadProducts = () => {
     console.log("Cargando productos...");
@@ -207,20 +208,16 @@ function CreateRequestPage() {
             Detalle de la Solicitud
           </AccordionTrigger>
           <AccordionContent>
-            <RequestDetail
+            <RequestForm
               requestCode={requestCode}
               requestType={requestType}
               company={company}
               onRequestCodeChange={setRequestCode}
               onRequestTypeChange={setRequestType}
               onCompanyChange={setCompany}
-            />
-            <Separator className="border-t mx-5 bg-red-400" />
-            <RequestData
               almacenOrigen={almacenOrigen}
               almacenDestino={almacenDestino}
               proyecto={proyecto}
-              company={company}
               onAlmacenOrigenChange={setAlmacenOrigen}
               onAlmacenDestinoChange={setAlmacenDestino}
               onProyectoChange={setProyecto}

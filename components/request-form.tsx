@@ -12,6 +12,8 @@ import {
 import { Autocomplete } from "./autocomplete";
 import { Textarea } from "./ui/textarea";
 import { useEffect, useState } from "react";
+import ErrorAlert from "./error-alert";
+import data from "@/lib/mock_user_sim.json";
 
 // Función para formatear fecha en dd/mm/yyyy hh:mm
 function formatDate(date: Date): string {
@@ -24,9 +26,16 @@ function formatDate(date: Date): string {
   return `${day}/${month}/${year} ${hours}:${minutes}`;
 }
 
-import data from "@/lib/mock_user_sim.json"
-
-interface RequestDataProps {
+interface RequestFormProps {
+  // Props del RequestDetail
+  requestCode?: string;
+  requestType?: string;
+  company?: string;
+  onRequestCodeChange?: (value: string) => void;
+  onRequestTypeChange?: (value: string) => void;
+  onCompanyChange?: (value: string) => void;
+  
+  // Props del RequestData
   almacenOrigen?: string;
   almacenDestino?: string;
   proyecto?: string;
@@ -35,14 +44,23 @@ interface RequestDataProps {
   estado?: string;
   observaciones?: string;
   ordenTrabajo?: string;
-  company?: string; // Nueva prop para la compañía
   onAlmacenOrigenChange?: (value: string) => void;
   onAlmacenDestinoChange?: (value: string) => void;
   onProyectoChange?: (value: string) => void;
+  
   readOnly?: boolean;
 }
 
-export function RequestData({
+export function RequestForm({
+  // RequestDetail props
+  requestCode = "2351",
+  requestType = "Solicitud de materiales",
+  company = "CPL",
+  onRequestCodeChange,
+  onRequestTypeChange,
+  onCompanyChange,
+  
+  // RequestData props
   almacenOrigen = "",
   almacenDestino = "",
   proyecto = "",
@@ -50,15 +68,17 @@ export function RequestData({
   creadoPor = data.user,
   estado = "Creada",
   ordenTrabajo = "",
-  company = "CPL", // Valor por defecto
   onAlmacenOrigenChange,
   onAlmacenDestinoChange,
   onProyectoChange,
   observaciones = "",
+  
   readOnly = false,
-}: RequestDataProps) {
+}: RequestFormProps) {
+  const [showError, setShowError] = useState(false);
   const [almacenesOrigen, setAlmacenesOrigen] = useState<Array<{value: string, label: string}>>([]);
   const [almacenesDestino, setAlmacenesDestino] = useState<Array<{value: string, label: string}>>([]);
+  const [autocompleteKey, setAutocompleteKey] = useState(0);
 
   // Función para obtener los almacenes según la compañía seleccionada
   const getAlmacenesByCompany = (companyCode: string) => {
@@ -72,15 +92,40 @@ export function RequestData({
     return { origen: [], destino: [] };
   };
 
+  // Efecto para validar compañías
+  useEffect(() => {
+    if (data.companies.length <= 0) {
+      setShowError(true);
+    }
+  }, []);
+
   // Efecto para actualizar los almacenes cuando cambia la compañía
   useEffect(() => {
     const { origen, destino } = getAlmacenesByCompany(company);
     setAlmacenesOrigen(origen);
     setAlmacenesDestino(destino);
     
+    // Incrementar la key para forzar re-render de los Autocomplete
+    setAutocompleteKey(prev => prev + 1);
+    
     // Limpiar los valores seleccionados cuando cambia la compañía
-    if (onAlmacenOrigenChange) onAlmacenOrigenChange("");
-    if (onAlmacenDestinoChange) onAlmacenDestinoChange("");
+    if (onAlmacenOrigenChange) {
+      // Si solo hay un almacén de origen, seleccionarlo automáticamente
+      if (origen.length === 1) {
+        onAlmacenOrigenChange(origen[0].value);
+      } else {
+        onAlmacenOrigenChange("");
+      }
+    }
+    
+    if (onAlmacenDestinoChange) {
+      // Si solo hay un almacén de destino, seleccionarlo automáticamente
+      if (destino.length === 1) {
+        onAlmacenDestinoChange(destino[0].value);
+      } else {
+        onAlmacenDestinoChange("");
+      }
+    }
   }, [company, onAlmacenOrigenChange, onAlmacenDestinoChange]);
 
   // Efecto para filtrar almacenes de destino cuando cambia el almacén de origen
@@ -97,6 +142,11 @@ export function RequestData({
       if (almacenDestino === almacenOrigen && onAlmacenDestinoChange) {
         onAlmacenDestinoChange("");
       }
+      
+      // Si después del filtrado solo queda un almacén de destino, seleccionarlo automáticamente
+      if (almacenesDestinoFiltrados.length === 1 && onAlmacenDestinoChange && almacenDestino !== almacenesDestinoFiltrados[0].value) {
+        onAlmacenDestinoChange(almacenesDestinoFiltrados[0].value);
+      }
     } else {
       // Si no hay almacén de origen seleccionado, mostrar todos los de destino
       setAlmacenesDestino(destino);
@@ -105,6 +155,67 @@ export function RequestData({
 
   return (
     <div className="space-y-6">
+      {showError && (
+        <ErrorAlert
+          message="Tu usuario no tiene ninguna compañía asignada."
+          onOpenChange={setShowError}
+        />
+      )}
+      
+      {/* Sección de detalles de la solicitud */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-[#F9F9F9] border-[#ECECEC] p-6">
+        {/* Código de solicitud */}
+        <div className="space-y-2">
+          <Label htmlFor="request-code" className="text-sm font-medium text-gray-700">
+            Código de solicitud
+          </Label>
+          <Input
+            id="request-code"
+            value={requestCode}
+            onChange={(e) => onRequestCodeChange?.(e.target.value)}
+            className={readOnly ? "bg-gray-50" : ""}
+            readOnly
+            disabled
+          />
+        </div>
+
+        {/* Tipo de solicitud */}
+        <div className="space-y-2">
+          <Label htmlFor="request-type" className="text-sm font-medium text-gray-700">
+            Tipo de solicitud
+          </Label>
+          <Input
+            id="request-type"
+            value={requestType}
+            onChange={(e) => onRequestTypeChange?.(e.target.value)}
+            placeholder="Solicitud de Materiales"
+            className={readOnly ? "bg-gray-50 text-gray-500" : ""}
+            readOnly
+            disabled
+          />
+        </div>
+
+        {/* Compañía */}
+        <div className="space-y-2">
+          <Label htmlFor="company" className="text-sm font-medium text-gray-700">
+            Compañía
+          </Label>
+          <Select value={company} onValueChange={onCompanyChange} disabled={readOnly}>
+            <SelectTrigger className={readOnly ? "bg-gray-50 w-full" : "w-full"}>
+              <SelectValue placeholder="Selecciona una compañía" />
+            </SelectTrigger>
+            <SelectContent>
+              {data.companies.map((comp) => (
+                <SelectItem key={comp.value} value={comp.value}>
+                  {comp.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Sección de datos de la solicitud */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-[#F9F9F9] p-6">
         {/* Row 1 */}
         <div className="space-y-2">
@@ -149,7 +260,8 @@ export function RequestData({
             disabled
           />
         </div>
-        {/* Row w 4 columns */}
+        
+        {/* Row 2 - 4 columns */}
         <div className="col-span-full grid grid-cols-1 md:grid-cols-4 gap-6 w-full">
           <div className="space-y-2">
             <Label
@@ -159,6 +271,7 @@ export function RequestData({
               Almacén origen
             </Label>
             <Autocomplete
+              key={`origen-${autocompleteKey}`}
               options={almacenesOrigen}
               placeholder="Selecciona un almacén"
               value={almacenOrigen}
@@ -174,6 +287,7 @@ export function RequestData({
               Almacén destino
             </Label>
             <Autocomplete
+              key={`destino-${autocompleteKey}`}
               options={almacenesDestino}
               placeholder="Selecciona un almacén"
               value={almacenDestino}
@@ -199,8 +313,6 @@ export function RequestData({
             />
           </div>
 
-         
-
           <div className="space-y-2">
             <Label
               htmlFor="orden-trabajo"
@@ -216,6 +328,8 @@ export function RequestData({
             />
           </div>
         </div>
+        
+        {/* Row 3 - Observaciones */}
         <div className="space-y-2 col-span-full">
           <Label
             htmlFor="observaciones"
@@ -233,4 +347,4 @@ export function RequestData({
       </div>
     </div>
   );
-}
+} 
