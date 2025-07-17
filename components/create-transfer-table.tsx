@@ -195,61 +195,65 @@ export function CreateTransferTable({
     ) || false;
 
     return (
-      <div>
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-gray-50">
-              <TableHead className="font-semibold text-gray-700 w-[60px]">
-                <div className="flex items-center justify-center">
-                  <Checkbox
-                    checked={allSubRowsSelected}
-                    ref={(el) => {
-                      if (el) {
-                        const input = el.querySelector('input[type="checkbox"]') as HTMLInputElement;
-                        if (input) input.indeterminate = someSubRowsSelected && !allSubRowsSelected;
-                      }
-                    }}
-                    onCheckedChange={(checked) => row.original.subRows && handleSelectAll(row.original.id, row.original.subRows, !!checked)}
-                    aria-label="Select all sub-items"
-                  />
-                </div>
-              </TableHead>
-              <TableHead className="font-semibold text-gray-700 w-[120px]">ID</TableHead>
-              <TableHead className="font-semibold text-gray-700 w-[320px]">Descripción</TableHead>
-              <TableHead className="font-semibold text-gray-700 text-center w-[150px]">Cantidad</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {row.original.subRows?.map((detail, index) => (
-              <TableRow key={index}>
-                <TableCell className="text-center w-[60px] min-w-[60px] max-w-[60px]">
+      <div className="p-2 sm:p-3 md:p-4 lg:p-5">
+        <div className="overflow-x-auto">
+          <Table className="min-w-full">
+            <TableHeader>
+              <TableRow className="bg-gray-50">
+                <TableHead className="font-semibold text-gray-700 w-[50px] sm:w-[60px] text-xs sm:text-sm">
                   <div className="flex items-center justify-center">
                     <Checkbox
-                      checked={subRowSelection[`${row.original.id}-${index}`] || false}
-                      onCheckedChange={(checked) => handleSelectSubRow(row.original.id, index, !!checked)}
-                      aria-label={`Select sub-item ${index + 1}`}
+                      checked={allSubRowsSelected}
+                      ref={(el) => {
+                        if (el) {
+                          const input = el.querySelector('input[type="checkbox"]') as HTMLInputElement;
+                          if (input) input.indeterminate = someSubRowsSelected && !allSubRowsSelected;
+                        }
+                      }}
+                      onCheckedChange={(checked) => row.original.subRows && handleSelectAll(row.original.id, row.original.subRows, !!checked)}
+                      aria-label="Select all sub-items"
+                      className="h-3 w-3 sm:h-4 sm:w-4"
                     />
                   </div>
-                </TableCell>
-                <TableCell className="font-medium w-[120px] min-w-[120px] max-w-[120px]">
-                  <div className="truncate">
-                    {detail.location}
-                  </div>
-                </TableCell>
-                <TableCell className="w-[320px] min-w-[320px] max-w-[320px]">
-                  <div className="truncate" title={detail.batch}>
-                    {detail.batch}
-                  </div>
-                </TableCell>
-                <TableCell className="text-center w-[150px] min-w-[150px] max-w-[150px]">
-                  <span className="inline-flex items-center justify-center min-w-[40px] px-2 py-1 rounded-md text-sm font-medium">
-                    {detail.defaultQuantity || 1}
-                  </span>
-                </TableCell>
+                </TableHead>
+                <TableHead className="font-semibold text-gray-700 w-[80px] sm:w-[100px] md:w-[120px] text-xs sm:text-sm">ID</TableHead>
+                <TableHead className="font-semibold text-gray-700 w-[200px] sm:w-[250px] md:w-[300px] lg:w-[320px] text-xs sm:text-sm">Descripción</TableHead>
+                <TableHead className="font-semibold text-gray-700 text-center w-[100px] sm:w-[120px] md:w-[150px] text-xs sm:text-sm">Cantidad</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {row.original.subRows?.map((detail, index) => (
+                <TableRow key={index}>
+                  <TableCell className="text-center w-[50px] sm:w-[60px] min-w-[50px] sm:min-w-[60px] max-w-[50px] sm:max-w-[60px] p-2 sm:p-3">
+                    <div className="flex items-center justify-center">
+                      <Checkbox
+                        checked={subRowSelection[`${row.original.id}-${index}`] || false}
+                        onCheckedChange={(checked) => handleSelectSubRow(row.original.id, index, !!checked)}
+                        aria-label={`Select sub-item ${index + 1}`}
+                        className="h-3 w-3 sm:h-4 sm:w-4"
+                      />
+                    </div>
+                  </TableCell>
+                  <TableCell className="font-medium w-[80px] sm:w-[100px] md:w-[120px] min-w-[80px] sm:min-w-[100px] md:min-w-[120px] max-w-[80px] sm:max-w-[100px] md:max-w-[120px] p-2 sm:p-3">
+                    <div className="truncate text-xs sm:text-sm">
+                      {detail.location}
+                    </div>
+                  </TableCell>
+                  <TableCell className="w-[200px] sm:w-[250px] md:w-[300px] lg:w-[320px] min-w-[200px] sm:min-w-[250px] md:min-w-[300px] lg:min-w-[320px] max-w-[200px] sm:max-w-[250px] md:max-w-[300px] lg:max-w-[320px] p-2 sm:p-3">
+                    <div className="truncate text-xs sm:text-sm" title={detail.batch}>
+                      {detail.batch}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-center w-[100px] sm:w-[120px] md:w-[150px] min-w-[100px] sm:min-w-[120px] md:min-w-[150px] max-w-[100px] sm:max-w-[120px] md:max-w-[150px] p-2 sm:p-3">
+                    <span className="inline-flex items-center justify-center min-w-[30px] sm:min-w-[35px] md:min-w-[40px] px-1 sm:px-2 py-1 rounded-md text-xs sm:text-sm font-medium">
+                      {detail.defaultQuantity || 1}
+                    </span>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     );
   };
@@ -258,24 +262,25 @@ export function CreateTransferTable({
     {
       id: "select-expand",
       header: ({ table }) => (
-        <div className="flex items-center justify-center mr-3">
+        <div className="flex items-center justify-center mr-1 sm:mr-2 md:mr-3">
           <Checkbox
             checked={table.getIsAllPageRowsSelected()}
             onCheckedChange={(value) =>
               table.toggleAllPageRowsSelected(!!value)
             }
             aria-label="Select all"
-            className="text-center"
+            className="text-center h-3 w-3 sm:h-4 sm:w-4"
           />
         </div>
       ),
       cell: ({ row }) => (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           <Checkbox
             checked={row.getIsSelected()}
             onCheckedChange={(value) => row.toggleSelected(!!value)}
             aria-label="Select row"
             onClick={(e) => e.stopPropagation()}
+            className="h-3 w-3 sm:h-4 sm:w-4"
           />
         </div>
       ),
@@ -285,7 +290,7 @@ export function CreateTransferTable({
       accessorKey: "code",
       header: "Código",
       cell: ({ getValue }) => (
-        <div className="min-w-[80px] max-w-[120px] truncate">
+        <div className="min-w-[60px] sm:min-w-[80px] md:min-w-[100px] lg:min-w-[120px] max-w-[60px] sm:max-w-[80px] md:max-w-[100px] lg:max-w-[120px] truncate text-xs sm:text-sm">
           {getValue<string>()}
         </div>
       ),
@@ -295,28 +300,28 @@ export function CreateTransferTable({
       accessorKey: "description",
       header: "Descripción",
       cell: ({ row, getValue }) => (
-        <div className="flex items-center gap-2 min-w-[200px] max-w-[300px]">
+        <div className="flex items-center gap-1 sm:gap-2 min-w-[150px] sm:min-w-[200px] md:min-w-[250px] lg:min-w-[300px] max-w-[150px] sm:max-w-[200px] md:max-w-[250px] lg:max-w-[300px]">
           {row.getCanExpand() ? (
             <button
               {...{
                 onClick: row.getToggleExpandedHandler(),
                 style: { cursor: "pointer" },
               }}
-              className="p-1 flex-shrink-0"
+              className="p-0.5 sm:p-1 flex-shrink-0"
             >
               <ChevronRight
                 className={cn(
-                  "h-4 w-4 transition-transform duration-200",
+                  "h-3 w-3 sm:h-4 sm:w-4 transition-transform duration-200",
                   row.getIsExpanded() ? "rotate-90" : ""
                 )}
               />
             </button>
           ) : (
-            <div className="w-6 flex-shrink-0"></div>
+            <div className="w-4 sm:w-6 flex-shrink-0"></div>
           )}
           <p
             className={cn(
-              "truncate",
+              "truncate text-xs sm:text-sm",
               row.getCanExpand() ? "font-bold text-[#004F9F] underline" : ""
             )}
           >
@@ -332,7 +337,7 @@ export function CreateTransferTable({
       cell: ({ getValue }) => {
         const value = getValue<number | null>();
         return (
-          <div className="min-w-[60px] text-center">
+          <div className="min-w-[50px] sm:min-w-[60px] md:min-w-[80px] text-center text-xs sm:text-sm">
             {value === null ? "-" : value}
           </div>
         );
@@ -343,21 +348,21 @@ export function CreateTransferTable({
       id: "quantity",
       header: "Cantidad",
       cell: ({ row }) => (
-        <div className="min-w-[100px]">
-                  <Input
-          type="number"
-          placeholder="1"
-          className="w-full min-w-[80px] max-w-[120px]"
-          min={1}
-          value={quantities[row.original.id] || ""}
-          onChange={(e) => {
-            const value = parseInt(e.target.value, 10);
-            setQuantities((q) => ({
-              ...q,
-              [row.original.id]: Math.max(1, isNaN(value) ? 1 : value),
-            }));
-          }}
-        />
+        <div className="min-w-[80px] sm:min-w-[90px] md:min-w-[100px]">
+          <Input
+            type="number"
+            placeholder="1"
+            className="w-full min-w-[60px] sm:min-w-[70px] md:min-w-[80px] max-w-[80px] sm:max-w-[100px] md:max-w-[120px] h-7 sm:h-8 md:h-9 text-xs sm:text-sm"
+            min={1}
+            value={quantities[row.original.id] || ""}
+            onChange={(e) => {
+              const value = parseInt(e.target.value, 10);
+              setQuantities((q) => ({
+                ...q,
+                [row.original.id]: Math.max(1, isNaN(value) ? 1 : value),
+              }));
+            }}
+          />
         </div>
       ),
       size: 120,
@@ -365,10 +370,9 @@ export function CreateTransferTable({
     {
       id: "actions",
       cell: ({ row }) => (
-        <div className="min-w-[60px] flex justify-center">
+        <div className="min-w-[50px] sm:min-w-[60px] md:min-w-[80px] flex justify-center">
           <Button
-            size="sm"
-            className="bg-gradient-to-b from-[#1A8754] to-[#17784B] hover:bg-green-700"
+            className="bg-gradient-to-b from-[#1A8754] to-[#17784B] hover:bg-green-700 h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9 p-1 sm:p-1.5 md:p-2"
             disabled={quantities[row.original.id] < 1 || quantities[row.original.id] === undefined}
             onClick={() => {
               if (onAddArticle) {
@@ -397,19 +401,19 @@ export function CreateTransferTable({
                 onAddArticle(articleToAdd);
                 toast.success("Artículo agregado correctamente", {
                   description: (
-                    <p className="text-sm text-[#1A8754]">
+                    <p className="text-xs sm:text-sm text-[#1A8754]">
                       El artículo ha sido agregado correctamente al detalle de la
                       solicitud.
                     </p>
                   ),
                   position: "top-right",
                   duration: 3000,
-                  icon: <CheckCircleIcon className="w-4 h-4 text-[#1A8754]" />,
+                  icon: <CheckCircleIcon className="w-3 h-3 sm:w-4 sm:h-4 text-[#1A8754]" />,
                 });
               }
             }}
           >
-            <PlusIcon />
+            <PlusIcon className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
         </div>
       ),
@@ -445,22 +449,22 @@ export function CreateTransferTable({
   };
 
   return (
-    <div className="w-full space-y-4 px-2 sm:px-4 md:px-6 lg:px-10">
-      <h2 className="text-lg sm:text-xl font-bold">Artículos en el Almacén</h2>
+    <div className="w-full space-y-2 sm:space-y-3 md:space-y-4 px-1 sm:px-2 md:px-4 lg:px-6 xl:px-10">
+      <h2 className="text-base sm:text-lg md:text-xl font-bold">Artículos en el Almacén</h2>
       
       {/* Filtros responsive */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 h-3 w-3 sm:h-4 sm:w-4 text-gray-400" />
           <Input
             placeholder="Código, descripción, ubicación"
-            className="pl-10 bg-white w-full"
+            className="pl-8 sm:pl-10 bg-white w-full text-xs sm:text-sm h-8 sm:h-9 md:h-10"
             value={globalFilter}
             onChange={(e) => setGlobalFilter(e.target.value)}
           />
         </div>
         <Button
-          className="bg-gradient-to-b from-[#004F9F] to-[#003871] text-white px-4 sm:px-6 w-full sm:w-auto"
+          className="bg-gradient-to-b from-[#004F9F] to-[#003871] text-white px-3 sm:px-4 md:px-6 w-full sm:w-auto text-xs sm:text-sm h-8 sm:h-9 md:h-10"
           onClick={() => table.setGlobalFilter(globalFilter)}
         >
           Buscar
@@ -473,10 +477,10 @@ export function CreateTransferTable({
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
-              className="w-full sm:w-auto justify-between"
+              className="w-full sm:w-auto justify-between text-xs sm:text-sm h-8 sm:h-9 md:h-10 px-2 sm:px-3 md:px-4"
             >
-              <Filter className="h-4 w-4" />
-              {sortDescription}
+              <Filter className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="truncate ml-1 sm:ml-2">{sortDescription}</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-full sm:w-auto">
@@ -578,77 +582,81 @@ export function CreateTransferTable({
 
       {/* Tabla con scroll */}
       <div className="rounded-md border bg-[#FFFFFF] overflow-hidden">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id} style={{ width: header.getSize() }}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows.map((row) => (
-              <React.Fragment key={row.id}>
-                <TableRow
-                  data-state={row.getIsSelected() && "selected"}
-                  className={cn(row.getIsExpanded() && "border-b-0")}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} style={{ width: cell.column.getSize() }}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
+        <div className="overflow-x-auto">
+          <Table className="min-w-full">
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead key={header.id} className="text-xs sm:text-sm whitespace-nowrap">
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
                   ))}
                 </TableRow>
-                {row.getIsExpanded() && (
-                  <TableRow>
-                    <TableCell colSpan={columns.length} className="p-0">
-                      {renderSubComponent({ row })}
-                    </TableCell>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows.map((row) => (
+                <React.Fragment key={row.id}>
+                  <TableRow
+                    data-state={row.getIsSelected() && "selected"}
+                    className={cn(row.getIsExpanded() && "border-b-0")}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id} className="p-2 sm:p-3 text-xs sm:text-sm whitespace-nowrap">
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
                   </TableRow>
-                )}
-              </React.Fragment>
-            ))}
-          </TableBody>
-        </Table>
+                  {row.getIsExpanded() && (
+                    <TableRow>
+                      <TableCell colSpan={columns.length} className="p-0">
+                        {renderSubComponent({ row })}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </React.Fragment>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </div>
       
       {/* Paginación responsive */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-600">
-        <div className="text-[#64748B] text-center sm:text-left">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
+        <div className="text-[#64748B] text-center sm:text-left text-xs sm:text-sm">
           Mostrando {table.getRowModel().rows.length} de {data.length} artículos
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           <Button
             variant="outline"
-            size="sm"
+            className="h-7 sm:h-8 md:h-9 px-2 sm:px-3 md:px-4 text-xs sm:text-sm"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            Anterior
+            <span className="hidden sm:inline">Anterior</span>
+            <span className="sm:hidden">Ant</span>
           </Button>
-          <span className="text-[#64748B] px-2">
+          <span className="text-[#64748B] px-1 sm:px-2 text-xs sm:text-sm whitespace-nowrap">
             {table.getState().pagination.pageIndex + 1} de{" "}
             {table.getPageCount()}
           </span>
           <Button
             variant="outline"
-            size="sm"
+            className="h-7 sm:h-8 md:h-9 px-2 sm:px-3 md:px-4 text-xs sm:text-sm"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            Siguiente
+            <span className="hidden sm:inline">Siguiente</span>
+            <span className="sm:hidden">Sig</span>
           </Button>
         </div>
       </div>

@@ -143,8 +143,12 @@ function CreateRequestPage() {
                 }
               });
               
+              // Actualizar también la cantidad del artículo padre
+              const newParentQuantity = (existingArticle.quantity || 1) + (article.quantity || 1);
+              
               return {
                 ...existingArticle,
+                quantity: newParentQuantity,
                 subRows: updatedSubRows
               };
             }
@@ -239,6 +243,7 @@ function CreateRequestPage() {
       <Accordion
         type="single"
         collapsible
+        defaultValue="item-1"
         className="bg-white rounded-lg p-2 mt-5"
       >
         <AccordionItem value="item-1">
