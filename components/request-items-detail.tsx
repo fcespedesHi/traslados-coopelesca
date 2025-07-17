@@ -53,7 +53,13 @@ interface Props {
 function RequestItemsDetail({ articles, onRemove, onUpdateQuantity }: Props) {
   const [expanded, setExpanded] = React.useState<ExpandedState>({});
 
-  // Limpiar estado de expansión para artículos que ya no existen
+  // Memoizar los IDs de artículos para detectar cambios reales
+  const articleIds = React.useMemo(() => 
+    articles.map(article => article.id).sort().join(','), 
+    [articles]
+  );
+
+  // Limpiar estado de expansión solo cuando se eliminan artículos (no al actualizar cantidades)
   React.useEffect(() => {
     const currentArticleIds = new Set(articles.map(article => article.id));
     setExpanded(prevExpanded => {
@@ -65,7 +71,7 @@ function RequestItemsDetail({ articles, onRemove, onUpdateQuantity }: Props) {
       });
       return cleanedExpanded;
     });
-  }, [articles]);
+  }, [articleIds]); // Solo depende de los IDs, no del array completo
 
  
 
