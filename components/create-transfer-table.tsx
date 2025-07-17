@@ -188,21 +188,7 @@ export function CreateTransferTable({
                     </div>
                   </TableCell>
                   <TableCell className="text-center w-[100px] sm:w-[120px] md:w-[150px] min-w-[100px] sm:min-w-[120px] md:min-w-[150px] max-w-[100px] sm:max-w-[120px] md:max-w-[150px] p-2 sm:p-3">
-                    <Input
-                      type="number"
-                      placeholder="1"
-                      className="w-full min-w-[60px] sm:min-w-[70px] md:min-w-[80px] max-w-[80px] sm:max-w-[100px] md:max-w-[120px] h-7 sm:h-8 md:h-9 text-xs sm:text-sm text-center"
-                      min={1}
-                      value={subItemQuantities[`${row.original.id}-${index}`] ?? defaultQuantities[`${row.original.id}-${index}`] ?? 1}
-                      onChange={(e) => {
-                        const value = parseInt(e.target.value, 10);
-                        const validValue = Math.max(1, isNaN(value) ? 1 : value);
-                        setSubItemQuantities((prev) => ({
-                          ...prev,
-                          [`${row.original.id}-${index}`]: validValue,
-                        }));
-                      }}
-                    />
+                    <span>{subItemQuantities[`${row.original.id}-${index}`] ?? defaultQuantities[`${row.original.id}-${index}`] ?? 1}</span>
                   </TableCell>
                 </TableRow>
               ))}
@@ -306,10 +292,9 @@ export function CreateTransferTable({
         <div className="min-w-[80px] sm:min-w-[90px] md:min-w-[100px]">
           <Input
             type="number"
-            placeholder="1"
             className="w-full min-w-[60px] sm:min-w-[70px] md:min-w-[80px] max-w-[80px] sm:max-w-[100px] md:max-w-[120px] h-7 sm:h-8 md:h-9 text-xs sm:text-sm"
             min={1}
-            value={quantities[row.original.id] || 1}
+            value={quantities[row.original.id]}
             onChange={(e) => {
               const inputValue = e.target.value;
               if (inputValue === "" || inputValue === "0") {
