@@ -308,6 +308,7 @@ export function RequestForm({
               onChange={(e) => onProyectoChange?.(e.target.value)}
               className="bg-gray-50 text-gray-500"
               type="number"
+              
               min={1}
               max={9999999999}
             />
@@ -324,7 +325,6 @@ export function RequestForm({
               id="orden-trabajo"
               value={ordenTrabajo}
               className="bg-gray-50 text-gray-500"
-              readOnly
             />
           </div>
         </div>

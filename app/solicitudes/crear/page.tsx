@@ -18,7 +18,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Separator } from "@radix-ui/react-separator";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import RequestItemsDetail from "@/components/request-items-detail";
 // Función para generar un número aleatorio de 4 dígitos
@@ -100,8 +100,8 @@ function CreateRequestPage() {
 
   // Agregar artículo (desde la tabla)
   const handleAddArticle = (article: {
-    id: string;
-    code: string;
+      id: string;
+      code: string;
     name: string;
     description: string;
     balance: number | null;
@@ -111,8 +111,46 @@ function CreateRequestPage() {
     setSelectedArticles((prev) => {
       const found = prev.find((a) => a.id === article.id);
       if (found) {
-        // Si ya existe, no agregar duplicado
-        return prev;
+        // Si ya existe, no agregar duplicado pero sumar la cantidad que se agrega de más
+        return prev.map((existingArticle) => {
+          if (existingArticle.id === article.id) {
+            // Artículo simple con quantity
+            if (existingArticle.quantity !== undefined && article.quantity) {
+              return {
+                ...existingArticle,
+                quantity: existingArticle.quantity + article.quantity
+              };
+            }
+            // Artículo con subRows
+            else if (existingArticle.subRows && article.subRows) {
+              const updatedSubRows = [...existingArticle.subRows];
+              
+              // Para cada subRow del artículo que se está agregando
+              article.subRows.forEach(newSubRow => {
+                const existingSubRowIndex = updatedSubRows.findIndex(
+                  existing => existing.location === newSubRow.location && existing.batch === newSubRow.batch
+                );
+                
+                if (existingSubRowIndex !== -1) {
+                  // Si ya existe esta combinación location/batch, sumar cantidades
+                  updatedSubRows[existingSubRowIndex] = {
+                    ...updatedSubRows[existingSubRowIndex],
+                    quantity: updatedSubRows[existingSubRowIndex].quantity + newSubRow.quantity
+                  };
+                } else {
+                  // Si no existe, agregar nuevo subRow
+                  updatedSubRows.push(newSubRow);
+                }
+              });
+              
+              return {
+                ...existingArticle,
+                subRows: updatedSubRows
+              };
+            }
+          }
+          return existingArticle;
+        });
       }
       
       // Preparar el artículo para agregar
@@ -241,6 +279,9 @@ function CreateRequestPage() {
           </div>
        
         <SheetContent side="bottom">
+          <SheetHeader>
+            <SheetTitle>Seleccionar Artículos del Almacén</SheetTitle>
+          </SheetHeader>
           <div className="rounded-lg bg-white shadow-sm p-10 bg-linear-to-b from-[#EBEEF4] to-[#F8FAFC]">
             <CreateTransferTable onAddArticle={handleAddArticle} />
           </div>

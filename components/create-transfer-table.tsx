@@ -123,7 +123,7 @@ const makeData = (): Item[] => [
       batch: "LOTE-P01", 
       available: 14,
       quantity: 0, // Se inicializará con defaultQuantity
-      defaultQuantity: 1,
+      defaultQuantity: 2,
     }],
   },
   {
@@ -149,28 +149,6 @@ const makeData = (): Item[] => [
   },
 ];
 
-const renderSubComponent = ({ row }: { row: Row<Item> }) => {
-  return (
-    <Table>
-      <TableBody>
-        {row.original.subRows?.map((detail, index) => (
-          <TableRow key={index}>
-            <TableCell /> {/* Checkbox/expand: vacío */}
-            <TableCell>{detail.location}</TableCell> {/* Código */}
-            <TableCell>{detail.batch}</TableCell> {/* Descripción */}
-            <TableCell>-</TableCell> {/* Saldo: guion */}
-            <TableCell>
-              {/* Cantidad: alineado igual que el input, pero solo texto */}
-              <span className="block w-full text-center">{detail.available}</span>
-            </TableCell>
-            <TableCell /> {/* Acciones: vacío */}
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  );
-};
-
 export function CreateTransferTable({
   onAddArticle,
 }: CreateTransferTableProps) {
@@ -185,6 +163,96 @@ export function CreateTransferTable({
   const [quantities, setQuantities] = React.useState<{ [id: string]: number }>(
     {}
   );
+  // Estado para selección de sub-filas
+  const [subRowSelection, setSubRowSelection] = React.useState<{ [key: string]: boolean }>({});
+
+  const handleSelectAll = (rowId: string, subRows: ItemDetail[], checked: boolean) => {
+    const newSelection: { [key: string]: boolean } = {};
+    subRows.forEach((_, index) => {
+      newSelection[`${rowId}-${index}`] = checked;
+    });
+    setSubRowSelection(prev => ({
+      ...prev,
+      ...newSelection
+    }));
+  };
+
+  const handleSelectSubRow = (rowId: string, subRowIndex: number, checked: boolean) => {
+    const key = `${rowId}-${subRowIndex}`;
+    setSubRowSelection(prev => ({
+      ...prev,
+      [key]: checked
+    }));
+  };
+
+  const renderSubComponent = ({ row }: { row: Row<Item> }) => {
+    const allSubRowsSelected = row.original.subRows?.every((_, index) => 
+      subRowSelection[`${row.original.id}-${index}`]
+    ) || false;
+
+    const someSubRowsSelected = row.original.subRows?.some((_, index) => 
+      subRowSelection[`${row.original.id}-${index}`]
+    ) || false;
+
+    return (
+      <div>
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-gray-50">
+              <TableHead className="font-semibold text-gray-700 w-[60px]">
+                <div className="flex items-center justify-center">
+                  <Checkbox
+                    checked={allSubRowsSelected}
+                    ref={(el) => {
+                      if (el) {
+                        const input = el.querySelector('input[type="checkbox"]') as HTMLInputElement;
+                        if (input) input.indeterminate = someSubRowsSelected && !allSubRowsSelected;
+                      }
+                    }}
+                    onCheckedChange={(checked) => row.original.subRows && handleSelectAll(row.original.id, row.original.subRows, !!checked)}
+                    aria-label="Select all sub-items"
+                  />
+                </div>
+              </TableHead>
+              <TableHead className="font-semibold text-gray-700 w-[120px]">ID</TableHead>
+              <TableHead className="font-semibold text-gray-700 w-[320px]">Descripción</TableHead>
+              <TableHead className="font-semibold text-gray-700 text-center w-[150px]">Cantidad</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {row.original.subRows?.map((detail, index) => (
+              <TableRow key={index}>
+                <TableCell className="text-center w-[60px] min-w-[60px] max-w-[60px]">
+                  <div className="flex items-center justify-center">
+                    <Checkbox
+                      checked={subRowSelection[`${row.original.id}-${index}`] || false}
+                      onCheckedChange={(checked) => handleSelectSubRow(row.original.id, index, !!checked)}
+                      aria-label={`Select sub-item ${index + 1}`}
+                    />
+                  </div>
+                </TableCell>
+                <TableCell className="font-medium w-[120px] min-w-[120px] max-w-[120px]">
+                  <div className="truncate">
+                    {detail.location}
+                  </div>
+                </TableCell>
+                <TableCell className="w-[320px] min-w-[320px] max-w-[320px]">
+                  <div className="truncate" title={detail.batch}>
+                    {detail.batch}
+                  </div>
+                </TableCell>
+                <TableCell className="text-center w-[150px] min-w-[150px] max-w-[150px]">
+                  <span className="inline-flex items-center justify-center min-w-[40px] px-2 py-1 rounded-md text-sm font-medium">
+                    {detail.defaultQuantity || 1}
+                  </span>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    );
+  };
 
   const columns: ColumnDef<Item>[] = [
     {
