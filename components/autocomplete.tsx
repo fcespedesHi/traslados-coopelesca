@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useMemo } from "react"
 import { Check, ChevronDown } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -48,13 +48,15 @@ export function Autocomplete({
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   // Filter options based on input with normalized comparison
-  const filteredOptions = options.filter((option) => {
-    const normalizedInput = normalizeText(inputValue)
-    const normalizedLabel = normalizeText(option.label)
-    const normalizedValue = normalizeText(option.value)
-    
-    return normalizedLabel.includes(normalizedInput) || normalizedValue.includes(normalizedInput)
-  })
+  const filteredOptions = useMemo(() => {
+    return options.filter((option) => {
+      const normalizedInput = normalizeText(inputValue)
+      const normalizedLabel = normalizeText(option.label)
+      const normalizedValue = normalizeText(option.value)
+      
+      return normalizedLabel.includes(normalizedInput) || normalizedValue.includes(normalizedInput)
+    })
+  }, [options, inputValue])
 
   // Set initial display value
   useEffect(() => {
@@ -98,7 +100,7 @@ export function Autocomplete({
         const selectedOption = options.find((opt) => opt.value === selectedValue)
         if (selectedOption) {
           setInputValue(selectedOption.label)
-        } else if (!filteredOptions.some((opt) => opt.label === inputValue)) {
+        } else if (!options.some((opt) => opt.label === inputValue)) {
           setInputValue("")
         }
       }
@@ -106,7 +108,7 @@ export function Autocomplete({
 
     document.addEventListener("mousedown", handleClickOutside)
     return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [selectedValue, options, inputValue, filteredOptions])
+  }, [selectedValue, options, inputValue])
 
   return (
     <div className={cn("relative", className)}>

@@ -48,7 +48,7 @@ interface Item {
   id: string;
   code: string;
   name: string;
-  description: string;
+  description?: string; // Opcional para compatibilidad con JSON
   balance: number | null;
   subRows?: ItemDetail[]; // Sub-filas para detalles
 }
@@ -57,7 +57,7 @@ interface ItemDetail {
   location: string;
   batch: string;
   available: number;
-  quantity: number; // Cantidad requerida para cada sub-item
+  quantity?: number; // Cantidad requerida para cada sub-item (opcional)
   defaultQuantity?: number; // Cantidad por defecto para este sub-item
 }
 
@@ -69,90 +69,22 @@ interface CreateTransferTableProps {
     description: string;
     balance: number | null;
     quantity: number;
-    subRows?: ItemDetail[];
+    subRows?: Array<{
+      location: string;
+      batch: string;
+      available: number;
+      quantity: number;
+      defaultQuantity?: number;
+    }>;
   }) => void;
 }
 
 // Datos de ejemplo
-const makeData = (): Item[] => [
-  {
-    id: "1",
-    code: "2-1065",
-    name: "2-1065",
-    description: "GANCHO S PARA HERRAJE DE...",
-    balance: 96,
-  },
-  {
-    id: "2",
-    code: "2-2100",
-    name: "2-2100",
-    description: "VM2_11_2",
-    balance: null,
-    subRows: [
-      {
-        location: "2-2100",
-        batch: "GRAPA DE HORQUILLA, CERCA DE 1 1/4 X 9",
-        available: 50,
-        quantity: 0, // Se inicializará con defaultQuantity
-        defaultQuantity: 14,
-      },
-      { 
-        location: "2-2100", 
-        batch: "GRAPA CONEXION A VARILLA", 
-        available: 50,
-        quantity: 0, // Se inicializará con defaultQuantity
-        defaultQuantity: 6,
-      },
-    ],
-  },
-  {
-    id: "3",
-    code: "2-2140",
-    name: "2-2140",
-    description: "POSTES DE MADERA 25 PIES,...",
-    balance: 125,
-  },
-  {
-    id: "4",
-    code: "2-2150",
-    name: "2-2150",
-    description: "POSTES DE MADERA 30 PIES,...",
-    balance: 14,
-    subRows: [{ 
-      location: "Patio Exterior", 
-      batch: "LOTE-P01", 
-      available: 14,
-      quantity: 0, // Se inicializará con defaultQuantity
-      defaultQuantity: 2,
-    }],
-  },
-  {
-    id: "5",
-    code: "2-2340",
-    name: "2-2340",
-    description: "REGULADOR DE VOLTAGE 100...",
-    balance: 3,
-  },
-  {
-    id: "6",
-    code: "2-2500",
-    name: "2-2500",
-    description: "VARILLA CONEXION A TIERRA...",
-    balance: 2,
-  },
-  {
-    id: "7",
-    code: "2-2647",
-    name: "2-2647",
-    description: "TUBO HG DE 2 PULGADAS (1.5...",
-    balance: 7,
-  },
-];
+import data from "@/lib/products_example.json";
 
 export function CreateTransferTable({
   onAddArticle,
 }: CreateTransferTableProps) {
-  const [data] = React.useState(() => makeData());
   const [rowSelection, setRowSelection] = React.useState({});
   const [expanded, setExpanded] = React.useState<ExpandedState>({});
   const [globalFilter, setGlobalFilter] = React.useState("");
@@ -160,11 +92,27 @@ export function CreateTransferTable({
   const [sortDescription, setSortDescription] =
     React.useState("Filtrar catálogo");
   // Estado para cantidades por fila
-  const [quantities, setQuantities] = React.useState<{ [id: string]: number }>(
+  const [quantities, setQuantities] = React.useState<{ [id: string]: number | undefined }>(
     {}
   );
   // Estado para selección de sub-filas
   const [subRowSelection, setSubRowSelection] = React.useState<{ [key: string]: boolean }>({});
+  // Estado para cantidades de sub-items
+  const [subItemQuantities, setSubItemQuantities] = React.useState<{ [key: string]: number }>({});
+  
+  // Memoizar la inicialización de cantidades por defecto
+  const defaultQuantities = React.useMemo(() => {
+    const quantities: { [key: string]: number } = {};
+    data.forEach((item) => {
+      if (item.subRows) {
+        item.subRows.forEach((subRow, index) => {
+          const key = `${item.id}-${index}`;
+          quantities[key] = subRow.defaultQuantity || 1;
+        });
+      }
+    });
+    return quantities;
+  }, []); // Sin dependencias para que se calcule solo una vez
 
   const handleSelectAll = (rowId: string, subRows: ItemDetail[], checked: boolean) => {
     const newSelection: { [key: string]: boolean } = {};
@@ -204,15 +152,10 @@ export function CreateTransferTable({
                   <div className="flex items-center justify-center">
                     <Checkbox
                       checked={allSubRowsSelected}
-                      ref={(el) => {
-                        if (el) {
-                          const input = el.querySelector('input[type="checkbox"]') as HTMLInputElement;
-                          if (input) input.indeterminate = someSubRowsSelected && !allSubRowsSelected;
-                        }
-                      }}
                       onCheckedChange={(checked) => row.original.subRows && handleSelectAll(row.original.id, row.original.subRows, !!checked)}
                       aria-label="Select all sub-items"
                       className="h-3 w-3 sm:h-4 sm:w-4"
+                      data-indeterminate={someSubRowsSelected && !allSubRowsSelected}
                     />
                   </div>
                 </TableHead>
@@ -245,9 +188,21 @@ export function CreateTransferTable({
                     </div>
                   </TableCell>
                   <TableCell className="text-center w-[100px] sm:w-[120px] md:w-[150px] min-w-[100px] sm:min-w-[120px] md:min-w-[150px] max-w-[100px] sm:max-w-[120px] md:max-w-[150px] p-2 sm:p-3">
-                    <span className="inline-flex items-center justify-center min-w-[30px] sm:min-w-[35px] md:min-w-[40px] px-1 sm:px-2 py-1 rounded-md text-xs sm:text-sm font-medium">
-                      {detail.defaultQuantity || 1}
-                    </span>
+                    <Input
+                      type="number"
+                      placeholder="1"
+                      className="w-full min-w-[60px] sm:min-w-[70px] md:min-w-[80px] max-w-[80px] sm:max-w-[100px] md:max-w-[120px] h-7 sm:h-8 md:h-9 text-xs sm:text-sm text-center"
+                      min={1}
+                      value={subItemQuantities[`${row.original.id}-${index}`] ?? defaultQuantities[`${row.original.id}-${index}`] ?? 1}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value, 10);
+                        const validValue = Math.max(1, isNaN(value) ? 1 : value);
+                        setSubItemQuantities((prev) => ({
+                          ...prev,
+                          [`${row.original.id}-${index}`]: validValue,
+                        }));
+                      }}
+                    />
                   </TableCell>
                 </TableRow>
               ))}
@@ -262,25 +217,25 @@ export function CreateTransferTable({
     {
       id: "select-expand",
       header: ({ table }) => (
-        <div className="flex items-center justify-center mr-1 sm:mr-2 md:mr-3">
+        <div className="flex items-center sm:mr-2 md:mr-3 w-max pl-1">
           <Checkbox
             checked={table.getIsAllPageRowsSelected()}
             onCheckedChange={(value) =>
               table.toggleAllPageRowsSelected(!!value)
             }
             aria-label="Select all"
-            className="text-center h-3 w-3 sm:h-4 sm:w-4"
+            className="h-3 w-3 sm:h-4 sm:w-4 mx-auto"
           />
         </div>
       ),
       cell: ({ row }) => (
-        <div className="flex items-center gap-1 sm:gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 w-max">
           <Checkbox
             checked={row.getIsSelected()}
             onCheckedChange={(value) => row.toggleSelected(!!value)}
             aria-label="Select row"
             onClick={(e) => e.stopPropagation()}
-            className="h-3 w-3 sm:h-4 sm:w-4"
+            className="h-3 w-3 sm:h-4 sm:w-4 mx-auto"
           />
         </div>
       ),
@@ -317,7 +272,7 @@ export function CreateTransferTable({
               />
             </button>
           ) : (
-            <div className="w-4 sm:w-6 flex-shrink-0"></div>
+            <div className="flex-shrink-0"></div>
           )}
           <p
             className={cn(
@@ -325,7 +280,7 @@ export function CreateTransferTable({
               row.getCanExpand() ? "font-bold text-[#004F9F] underline" : ""
             )}
           >
-            {getValue<string>()}
+            {getValue<string>() || row.original.name}
           </p>
         </div>
       ),
@@ -337,12 +292,12 @@ export function CreateTransferTable({
       cell: ({ getValue }) => {
         const value = getValue<number | null>();
         return (
-          <div className="min-w-[50px] sm:min-w-[60px] md:min-w-[80px] text-center text-xs sm:text-sm">
+          <div className="w-full text-start min-w-[50px] sm:min-w-[60px] md:min-w-[80px] text-xs sm:text-sm">
             {value === null ? "-" : value}
           </div>
         );
       },
-      size: 80,
+
     },
     {
       id: "quantity",
@@ -354,13 +309,24 @@ export function CreateTransferTable({
             placeholder="1"
             className="w-full min-w-[60px] sm:min-w-[70px] md:min-w-[80px] max-w-[80px] sm:max-w-[100px] md:max-w-[120px] h-7 sm:h-8 md:h-9 text-xs sm:text-sm"
             min={1}
-            value={quantities[row.original.id] || ""}
+            value={quantities[row.original.id] || 1}
             onChange={(e) => {
-              const value = parseInt(e.target.value, 10);
-              setQuantities((q) => ({
-                ...q,
-                [row.original.id]: Math.max(1, isNaN(value) ? 1 : value),
-              }));
+              const inputValue = e.target.value;
+              if (inputValue === "" || inputValue === "0") {
+                // Permitir estado vacío temporalmente
+                setQuantities((q) => ({
+                  ...q,
+                  [row.original.id]: undefined,
+                }));
+              } else {
+                const value = parseInt(inputValue, 10);
+                if (!isNaN(value) && value >= 1) {
+                  setQuantities((q) => ({
+                    ...q,
+                    [row.original.id]: value,
+                  }));
+                }
+              }
             }}
           />
         </div>
@@ -373,31 +339,48 @@ export function CreateTransferTable({
         <div className="min-w-[50px] sm:min-w-[60px] md:min-w-[80px] flex justify-center">
           <Button
             className="bg-gradient-to-b from-[#1A8754] to-[#17784B] hover:bg-green-700 h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9 p-1 sm:p-1.5 md:p-2"
-            disabled={quantities[row.original.id] < 1 || quantities[row.original.id] === undefined}
+            disabled={!quantities[row.original.id] || (quantities[row.original.id] ?? 0) < 1}
             onClick={() => {
               if (onAddArticle) {
-                const selectedQuantity = Math.max(1, quantities[row.original.id] || 1);
+                const selectedQuantity = Math.max(1, quantities[row.original.id] ?? 1);
                 
                 // Si es un producto compuesto, inicializar las cantidades de los hijos
-                let processedSubRows = row.original.subRows;
+                let processedSubRows: Array<{
+                  location: string;
+                  batch: string;
+                  available: number;
+                  quantity: number;
+                }> | undefined = undefined;
+                
                 if (row.original.subRows && row.original.subRows.length > 0) {
-                  processedSubRows = row.original.subRows.map(subRow => ({
-                    ...subRow,
-                    quantity: subRow.defaultQuantity || 1, // Forzar que quantity = defaultQuantity
-                    defaultQuantity: subRow.defaultQuantity || 1,
-                  }));
+                  processedSubRows = row.original.subRows.map((subRow, index) => {
+                    const key = `${row.original.id}-${index}`;
+                    const currentQuantity = subItemQuantities[key];
+                    const defaultQuantity = defaultQuantities[key];
+                    const baseQuantity = currentQuantity || defaultQuantity || 1;
+                    
+                    // Multiplicar la cantidad base por la cantidad del producto padre
+                    const finalQuantity = baseQuantity * selectedQuantity;
+                    
+                    return {
+                      location: subRow.location,
+                      batch: subRow.batch,
+                      available: subRow.available,
+                      quantity: finalQuantity,
+                      defaultQuantity: defaultQuantity || 1, // Incluir defaultQuantity
+                    };
+                  });
                 }
 
                 const articleToAdd = {
                   id: row.original.id,
                   code: row.original.code,
                   name: row.original.name,
-                  description: row.original.description,
+                  description: row.original.description || row.original.name,
                   balance: row.original.balance,
                   quantity: selectedQuantity,
                   subRows: processedSubRows,
                 };
-                console.log('Adding article with subRows:', articleToAdd);
                 onAddArticle(articleToAdd);
                 toast.success("Artículo agregado correctamente", {
                   description: (
@@ -580,11 +563,17 @@ export function CreateTransferTable({
         </DropdownMenu>
       </div>
 
-      {/* Tabla con scroll */}
+      {/* Tabla con scroll interno */}
       <div className="rounded-md border bg-[#FFFFFF] overflow-hidden">
-        <div className="overflow-x-auto">
-          <Table className="min-w-full">
-            <TableHeader>
+        <div 
+          className="overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+          style={{ 
+            height: '400px',
+            maxHeight: '400px'
+          }}
+        >
+          <Table className="min-w-full relative">
+            <TableHeader className="sticky top-0 bg-white z-10 border-b">
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (

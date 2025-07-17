@@ -1,6 +1,6 @@
 "use client";
 import { RequestForm } from "@/components/request-form";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { CreateTransferTable } from "@/components/create-transfer-table";
 import ErrorAlert from "@/components/error-alert";
 import {
@@ -34,6 +34,7 @@ interface ItemDetail {
   batch: string;
   available: number;
   quantity: number; // Cantidad requerida para cada sub-item
+  defaultQuantity?: number; // Cantidad por defecto para este sub-item
 }
 
 interface Article {
@@ -59,6 +60,8 @@ function CreateRequestPage() {
   const [almacenOrigen, setAlmacenOrigen] = useState("");
   const [almacenDestino, setAlmacenDestino] = useState("");
   const [proyecto, setProyecto] = useState("");
+  const [observaciones, setObservaciones] = useState("");
+  const [ordenTrabajo, setOrdenTrabajo] = useState("");
 
   const [sideListOpen, setSideListOpen] = useState(true);
 
@@ -66,10 +69,10 @@ function CreateRequestPage() {
   const [selectedArticles, setSelectedArticles] = useState<Article[]>([]);
 
   //funciones para guardar, solicitar aprobación, enviar y eliminar solicitud
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     console.log("Guardando solicitud...");
     // Aquí iría la lógica para guardar
-  };
+  }, []);
 
   const handleRequestApproval = () => {
     console.log("Solicitando aprobación...");
@@ -99,7 +102,7 @@ function CreateRequestPage() {
   }
 
   // Agregar artículo (desde la tabla)
-  const handleAddArticle = (article: {
+  const handleAddArticle = useCallback((article: {
       id: string;
       code: string;
     name: string;
@@ -166,12 +169,9 @@ function CreateRequestPage() {
         balance: article.balance,
       };
 
-      // Si tiene sub-items, agregar cantidades por defecto
+      // Si tiene sub-items, usar las cantidades que ya vienen procesadas
       if (article.subRows && article.subRows.length > 0) {
-        articleToAdd.subRows = article.subRows.map(subRow => ({
-          ...subRow,
-          quantity: Math.min(article.quantity, subRow.available) // Usar la cantidad disponible o la solicitada, lo que sea menor
-        }));
+        articleToAdd.subRows = article.subRows; // Usar las cantidades exactas que eligió el usuario
       } else {
         // Para artículos simples, usar la cantidad solicitada
         articleToAdd.quantity = article.quantity;
@@ -181,17 +181,17 @@ function CreateRequestPage() {
     });
     //autoguardar cada que se agrega un artículo
     handleSave();
-  };
+  }, [handleSave]);
 
   // Quitar artículo (desde el sidebar)
-  const handleRemoveArticle = (id: string) => {
+  const handleRemoveArticle = useCallback((id: string) => {
     setSelectedArticles((prev) => prev.filter((a) => a.id !== id));
     //autoguardar cada que se quita un artículo
     handleSave();
-  };
+  }, [handleSave]);
 
   // Actualizar cantidad de artículos
-  const handleUpdateQuantity = (articleId: string, quantity: number, subItemIndex?: number) => {
+  const handleUpdateQuantity = useCallback((articleId: string, quantity: number, subItemIndex?: number) => {
     setSelectedArticles((prev) => {
       return prev.map((article) => {
         if (article.id === articleId) {
@@ -207,11 +207,26 @@ function CreateRequestPage() {
               subRows: updatedSubRows,
             };
           } else {
-            // Actualizar cantidad del artículo simple
-            return {
-              ...article,
-              quantity: quantity,
-            };
+            // Actualizar cantidad del artículo padre (y multiplicar sub-items si los tiene)
+            if (article.subRows && article.subRows.length > 0) {
+              // Para artículos compuestos, actualizar cantidad padre y multiplicar sub-items
+              const updatedSubRows = article.subRows.map((subRow) => ({
+                ...subRow,
+                quantity: (subRow.defaultQuantity || 1) * quantity,
+              }));
+              
+              return {
+                ...article,
+                quantity: quantity,
+                subRows: updatedSubRows,
+              };
+            } else {
+              // Para artículos simples, solo actualizar la cantidad
+              return {
+                ...article,
+                quantity: quantity,
+              };
+            }
           }
         }
         return article;
@@ -219,7 +234,7 @@ function CreateRequestPage() {
     });
     //autoguardar cada que se actualiza una cantidad
     handleSave();
-  };
+  }, [handleSave]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-4 space-y-4">
@@ -261,9 +276,13 @@ function CreateRequestPage() {
               almacenOrigen={almacenOrigen}
               almacenDestino={almacenDestino}
               proyecto={proyecto}
+              observaciones={observaciones}
+              ordenTrabajo={ordenTrabajo}
               onAlmacenOrigenChange={setAlmacenOrigen}
               onAlmacenDestinoChange={setAlmacenDestino}
               onProyectoChange={setProyecto}
+              onObservacionesChange={setObservaciones}
+              onOrdenTrabajoChange={setOrdenTrabajo}
             />
           </AccordionContent>
         </AccordionItem>

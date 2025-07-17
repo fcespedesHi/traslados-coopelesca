@@ -1,0 +1,74 @@
+[
+  {
+    "id": "1",
+    "code": "2-1065",
+    "name": "2-1065",
+    "description": "GANCHO S PARA HERRAJE DE...",
+    "balance": 96
+  },
+  {
+    "id": "2",
+    "code": "2-2100",
+    "name": "VM2_11_2",
+    "balance": null,
+    "subRows": [
+      {
+        "location": "2-2100",
+        "batch": "GRAPA DE HORQUILLA, CERCA DE 1 1/4 X 9",
+        "available": 50,
+        "quantity": 0,
+        "defaultQuantity": 14
+      },
+      {
+        "location": "2-2100",
+        "batch": "GRAPA CONEXION A VARILLA",
+        "available": 50,
+        "defaultQuantity": 6
+      }
+    ]
+  },
+  {
+    "id": "3",
+    "code": "2-2140",
+    "name": "2-2140",
+    "description": "POSTES DE MADERA 25 PIES,...",
+    "balance": 125
+  },
+  {
+    "id": "4",
+    "code": "2-2150",
+    "name": "2-2150",
+    "description": "POSTES DE MADERA 30 PIES,...",
+    "balance": 14,
+    "subRows": [
+      {
+        "location": "Patio Exterior",
+        "batch": "LOTE-P01",
+        "available": 14,
+        "quantity": 0,
+        "defaultQuantity": 2
+      }
+    ]
+  },
+  {
+    "id": "5",
+    "code": "2-2340",
+    "name": "2-2340",
+    "description": "REGULADOR DE VOLTAGE 100...",
+    "balance": 3
+  },
+  {
+    "id": "6",
+    "code": "2-2500",
+    "name": "2-2500",
+    "description": "VARILLA CONEXION A TIERRA...",
+    "balance": 2
+  },
+  {
+    "id": "7",
+    "code": "2-2647",
+    "name": "2-2647",
+    "description": "TUBO HG DE 2 PULGADAS (1.5...",
+    "balance": 7
+  }
+]

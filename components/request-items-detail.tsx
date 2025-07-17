@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -53,21 +53,19 @@ interface Props {
 function RequestItemsDetail({ articles, onRemove, onUpdateQuantity }: Props) {
   const [expanded, setExpanded] = React.useState<ExpandedState>({});
 
-
-  const [initializedArticles, setInitializedArticles] = React.useState<Set<string>>(new Set());
-
-  useEffect(() => {
-    articles.forEach(article => {
-      if (article.subRows && !initializedArticles.has(article.id)) {
-        article.subRows.forEach((subRow, index) => {
-          if (!subRow.quantity || subRow.quantity === 0) {
-            onUpdateQuantity?.(article.id, subRow.defaultQuantity || 1, index);
-          }
-        });
-        setInitializedArticles(prev => new Set([...prev, article.id]));
-      }
+  // Limpiar estado de expansión para artículos que ya no existen
+  React.useEffect(() => {
+    const currentArticleIds = new Set(articles.map(article => article.id));
+    setExpanded(prevExpanded => {
+      const cleanedExpanded: ExpandedState = {};
+      Object.entries(prevExpanded).forEach(([key, value]) => {
+        if (currentArticleIds.has(key) && value) {
+          (cleanedExpanded as any)[key] = value;
+        }
+      });
+      return cleanedExpanded;
     });
-  }, [articles, onUpdateQuantity, initializedArticles]);
+  }, [articles]);
 
  
 
@@ -95,24 +93,9 @@ function RequestItemsDetail({ articles, onRemove, onUpdateQuantity }: Props) {
 
   // Función para manejar el cambio de cantidad del producto padre
   const handleParentQuantityChange = React.useCallback((article: Article, newQuantity: number) => {
-    if (!article.subRows || article.subRows.length === 0) {
-      // Para artículos simples, solo actualizar la cantidad
-      onUpdateQuantity?.(article.id, Math.max(1, newQuantity));
-      return;
-    }
-
-    // Para artículos compuestos
-    const parentQuantity = Math.max(1, newQuantity);
-    
-    // Actualizar la cantidad del padre
-    onUpdateQuantity?.(article.id, parentQuantity);
-
-    // Actualizar las cantidades de los hijos basándose en sus cantidades por defecto
-    article.subRows.forEach((subRow, index) => {
-      const defaultQuantity = subRow.defaultQuantity || 1;
-      const newChildQuantity = Math.max(1, defaultQuantity * parentQuantity);
-      onUpdateQuantity?.(article.id, newChildQuantity, index);
-    });
+    const validQuantity = Math.max(1, newQuantity);
+    // El componente padre se encarga de la multiplicación automática de sub-items
+    onUpdateQuantity?.(article.id, validQuantity);
   }, [onUpdateQuantity]);
 
 
@@ -150,7 +133,7 @@ function RequestItemsDetail({ articles, onRemove, onUpdateQuantity }: Props) {
                     </div>
                   </TableCell>
                   <TableCell className="text-center w-[80px] sm:w-[90px] md:w-[100px] min-w-[80px] sm:min-w-[90px] md:min-w-[100px] max-w-[80px] sm:max-w-[90px] md:max-w-[100px] p-2 sm:p-3">
-                    <span className="inline-flex items-center justify-center min-w-[30px] sm:min-w-[35px] md:min-w-[40px] px-1 sm:px-2 py-1 rounded-md text-xs sm:text-sm font-medium">
+                    <span className="inline-flex items-center justify-center min-w-[30px] sm:min-w-[35px] md:min-w-[40px] px-1 sm:px-2 py-1  rounded-md text-xs sm:text-sm font-medium">
                       {detail.available}
                     </span>
                   </TableCell>
@@ -260,11 +243,6 @@ function RequestItemsDetail({ articles, onRemove, onUpdateQuantity }: Props) {
           const totalQuantity = calculateTotalQuantity(row.original);
           const isCompound = row.getCanExpand();
           const hasSubRows = !!row.original.subRows && row.original.subRows.length > 0;
-          
-          console.log('Row data:', row.original);
-          console.log('Is compound:', isCompound);
-          console.log('Has subRows:', hasSubRows);
-          console.log('SubRows length:', row.original.subRows?.length);
 
           // Usar hasSubRows directamente en lugar de isCompound para debug
           if (hasSubRows) {
@@ -292,12 +270,12 @@ function RequestItemsDetail({ articles, onRemove, onUpdateQuantity }: Props) {
                   type="number"
                   placeholder="1"
                   className="w-full min-w-[60px] sm:min-w-[70px] md:min-w-[80px] max-w-[80px] sm:max-w-[100px] md:max-w-[120px] h-7 sm:h-8 md:h-9 text-xs sm:text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  min={1}
                   max={row.original.balance || 1}
                   value={row.original.quantity || 1}
                   onChange={(e) => {
                     const value = parseInt(e.target.value, 10);
                     onUpdateQuantity?.(row.original.id, Math.max(1, isNaN(value) ? 1 : value));
-                    handleParentQuantityChange(row.original, Math.max(1, isNaN(value) ? 1 : value));
                   }}
                 />
               </div>
@@ -335,7 +313,6 @@ function RequestItemsDetail({ articles, onRemove, onUpdateQuantity }: Props) {
     onExpandedChange: setExpanded,
     getRowCanExpand: (row) => {
       const canExpand = !!row.original.subRows && row.original.subRows.length > 0;
-      console.log('getRowCanExpand for row:', row.original.id, 'canExpand:', canExpand);
       return canExpand;
     },
     getCoreRowModel: getCoreRowModel(),

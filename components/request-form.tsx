@@ -47,6 +47,8 @@ interface RequestFormProps {
   onAlmacenOrigenChange?: (value: string) => void;
   onAlmacenDestinoChange?: (value: string) => void;
   onProyectoChange?: (value: string) => void;
+  onObservacionesChange?: (value: string) => void;
+  onOrdenTrabajoChange?: (value: string) => void;
   
   readOnly?: boolean;
 }
@@ -71,6 +73,8 @@ export function RequestForm({
   onAlmacenOrigenChange,
   onAlmacenDestinoChange,
   onProyectoChange,
+  onObservacionesChange,
+  onOrdenTrabajoChange,
   observaciones = "",
   
   readOnly = false,
@@ -126,7 +130,7 @@ export function RequestForm({
         onAlmacenDestinoChange("");
       }
     }
-  }, [company, onAlmacenOrigenChange, onAlmacenDestinoChange]);
+  }, [company]); // Eliminar las funciones callback de las dependencias
 
   // Efecto para filtrar almacenes de destino cuando cambia el almacén de origen
   useEffect(() => {
@@ -151,7 +155,7 @@ export function RequestForm({
       // Si no hay almacén de origen seleccionado, mostrar todos los de destino
       setAlmacenesDestino(destino);
     }
-  }, [almacenOrigen, company, almacenDestino, onAlmacenDestinoChange]);
+  }, [almacenOrigen, company, almacenDestino]); // Eliminar onAlmacenDestinoChange de las dependencias
 
   return (
     <div className="space-y-6">
@@ -227,7 +231,7 @@ export function RequestForm({
           </Label>
           <Input
             id="creado-por"
-            value={creadoPor}
+            defaultValue={creadoPor}
             className="bg-gray-50 text-gray-500"
             readOnly
             disabled
@@ -239,7 +243,7 @@ export function RequestForm({
           </Label>
           <Input
             id="estado"
-            value={estado}
+            defaultValue={estado}
             className="bg-gray-50 text-gray-500"
             readOnly
             disabled
@@ -254,7 +258,7 @@ export function RequestForm({
           </Label>
           <Input
             id="fecha-creacion"
-            value={fechaCreacion}
+            defaultValue={fechaCreacion}
             className="bg-gray-50"
             readOnly
             disabled
@@ -324,6 +328,7 @@ export function RequestForm({
             <Input
               id="orden-trabajo"
               value={ordenTrabajo}
+              onChange={(e) => onOrdenTrabajoChange?.(e.target.value)}
               className="bg-gray-50 text-gray-500"
             />
           </div>
@@ -340,6 +345,7 @@ export function RequestForm({
           <Textarea
             id="observaciones"
             value={observaciones}
+            onChange={(e) => onObservacionesChange?.(e.target.value)}
             className="bg-gray-50 text-gray-500 w-full"
             placeholder="Escriba su comentario aquí"
           />
