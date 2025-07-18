@@ -92,14 +92,18 @@ export function CreateTransferTable({
   const [sortDescription, setSortDescription] =
     React.useState("Filtrar catálogo");
   // Estado para cantidades por fila
-  const [quantities, setQuantities] = React.useState<{ [id: string]: number | undefined }>(
-    {}
-  );
+  const [quantities, setQuantities] = React.useState<{
+    [id: string]: number | undefined;
+  }>({});
   // Estado para selección de sub-filas
-  const [subRowSelection, setSubRowSelection] = React.useState<{ [key: string]: boolean }>({});
+  const [subRowSelection, setSubRowSelection] = React.useState<{
+    [key: string]: boolean;
+  }>({});
   // Estado para cantidades de sub-items
-  const [subItemQuantities, setSubItemQuantities] = React.useState<{ [key: string]: number }>({});
-  
+  const [subItemQuantities, setSubItemQuantities] = React.useState<{
+    [key: string]: number;
+  }>({});
+
   // Memoizar la inicialización de cantidades por defecto
   const defaultQuantities = React.useMemo(() => {
     const quantities: { [key: string]: number } = {};
@@ -114,33 +118,43 @@ export function CreateTransferTable({
     return quantities;
   }, []); // Sin dependencias para que se calcule solo una vez
 
-  const handleSelectAll = (rowId: string, subRows: ItemDetail[], checked: boolean) => {
+  const handleSelectAll = (
+    rowId: string,
+    subRows: ItemDetail[],
+    checked: boolean
+  ) => {
     const newSelection: { [key: string]: boolean } = {};
     subRows.forEach((_, index) => {
       newSelection[`${rowId}-${index}`] = checked;
     });
-    setSubRowSelection(prev => ({
+    setSubRowSelection((prev) => ({
       ...prev,
-      ...newSelection
+      ...newSelection,
     }));
   };
 
-  const handleSelectSubRow = (rowId: string, subRowIndex: number, checked: boolean) => {
+  const handleSelectSubRow = (
+    rowId: string,
+    subRowIndex: number,
+    checked: boolean
+  ) => {
     const key = `${rowId}-${subRowIndex}`;
-    setSubRowSelection(prev => ({
+    setSubRowSelection((prev) => ({
       ...prev,
-      [key]: checked
+      [key]: checked,
     }));
   };
 
   const renderSubComponent = ({ row }: { row: Row<Item> }) => {
-    const allSubRowsSelected = row.original.subRows?.every((_, index) => 
-      subRowSelection[`${row.original.id}-${index}`]
-    ) || false;
+    const allSubRowsSelected =
+      row.original.subRows?.every(
+        (_, index) => subRowSelection[`${row.original.id}-${index}`]
+      ) || false;
 
-    const someSubRowsSelected = row.original.subRows?.some((_, index) => 
-      subRowSelection[`${row.original.id}-${index}`]
-    ) || false;
+    const someSubRowsSelected =
+      row.original.subRows?.some(
+        (_, index) => subRowSelection[`${row.original.id}-${index}`]
+      ) || false;
 
     return (
       <div className="p-2 sm:p-3 md:p-4 lg:p-5">
@@ -152,16 +166,31 @@ export function CreateTransferTable({
                   <div className="flex items-center justify-center">
                     <Checkbox
                       checked={allSubRowsSelected}
-                      onCheckedChange={(checked) => row.original.subRows && handleSelectAll(row.original.id, row.original.subRows, !!checked)}
+                      onCheckedChange={(checked) =>
+                        row.original.subRows &&
+                        handleSelectAll(
+                          row.original.id,
+                          row.original.subRows,
+                          !!checked
+                        )
+                      }
                       aria-label="Select all sub-items"
                       className="h-3 w-3 sm:h-4 sm:w-4"
-                      data-indeterminate={someSubRowsSelected && !allSubRowsSelected}
+                      data-indeterminate={
+                        someSubRowsSelected && !allSubRowsSelected
+                      }
                     />
                   </div>
                 </TableHead>
-                <TableHead className="font-semibold text-gray-700 w-[80px] sm:w-[100px] md:w-[120px] text-xs sm:text-sm">ID</TableHead>
-                <TableHead className="font-semibold text-gray-700 w-[200px] sm:w-[250px] md:w-[300px] lg:w-[320px] text-xs sm:text-sm">Descripción</TableHead>
-                <TableHead className="font-semibold text-gray-700 text-center w-[100px] sm:w-[120px] md:w-[150px] text-xs sm:text-sm">Cantidad</TableHead>
+                <TableHead className="font-semibold text-gray-700 w-[80px] sm:w-[100px] md:w-[120px] text-xs sm:text-sm">
+                  ID
+                </TableHead>
+                <TableHead className="font-semibold text-gray-700 w-[200px] sm:w-[250px] md:w-[300px] lg:w-[320px] text-xs sm:text-sm">
+                  Descripción
+                </TableHead>
+                <TableHead className="font-semibold text-gray-700 text-center w-[100px] sm:w-[120px] md:w-[150px] text-xs sm:text-sm">
+                  Cantidad
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -170,8 +199,13 @@ export function CreateTransferTable({
                   <TableCell className="text-center w-[50px] sm:w-[60px] min-w-[50px] sm:min-w-[60px] max-w-[50px] sm:max-w-[60px] p-2 sm:p-3">
                     <div className="flex items-center justify-center">
                       <Checkbox
-                        checked={subRowSelection[`${row.original.id}-${index}`] || false}
-                        onCheckedChange={(checked) => handleSelectSubRow(row.original.id, index, !!checked)}
+                        checked={
+                          subRowSelection[`${row.original.id}-${index}`] ||
+                          false
+                        }
+                        onCheckedChange={(checked) =>
+                          handleSelectSubRow(row.original.id, index, !!checked)
+                        }
                         aria-label={`Select sub-item ${index + 1}`}
                         className="h-3 w-3 sm:h-4 sm:w-4"
                       />
@@ -183,12 +217,19 @@ export function CreateTransferTable({
                     </div>
                   </TableCell>
                   <TableCell className="w-[200px] sm:w-[250px] md:w-[300px] lg:w-[320px] min-w-[200px] sm:min-w-[250px] md:min-w-[300px] lg:min-w-[320px] max-w-[200px] sm:max-w-[250px] md:max-w-[300px] lg:max-w-[320px] p-2 sm:p-3">
-                    <div className="truncate text-xs sm:text-sm" title={detail.batch}>
+                    <div
+                      className="truncate text-xs sm:text-sm"
+                      title={detail.batch}
+                    >
                       {detail.batch}
                     </div>
                   </TableCell>
                   <TableCell className="text-center w-[100px] sm:w-[120px] md:w-[150px] min-w-[100px] sm:min-w-[120px] md:min-w-[150px] max-w-[100px] sm:max-w-[120px] md:max-w-[150px] p-2 sm:p-3">
-                    <span>{subItemQuantities[`${row.original.id}-${index}`] ?? defaultQuantities[`${row.original.id}-${index}`] ?? 1}</span>
+                    <span>
+                      {subItemQuantities[`${row.original.id}-${index}`] ??
+                        defaultQuantities[`${row.original.id}-${index}`] ??
+                        1}
+                    </span>
                   </TableCell>
                 </TableRow>
               ))}
@@ -283,7 +324,6 @@ export function CreateTransferTable({
           </div>
         );
       },
-
     },
     {
       id: "quantity",
@@ -324,37 +364,48 @@ export function CreateTransferTable({
         <div className="min-w-[50px] sm:min-w-[60px] md:min-w-[80px] flex justify-center">
           <Button
             className="bg-gradient-to-b from-[#1A8754] to-[#17784B] hover:bg-green-700 h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9 p-1 sm:p-1.5 md:p-2"
-            disabled={!quantities[row.original.id] || (quantities[row.original.id] ?? 0) < 1}
+            disabled={
+              !quantities[row.original.id] ||
+              (quantities[row.original.id] ?? 0) < 1
+            }
             onClick={() => {
               if (onAddArticle) {
-                const selectedQuantity = Math.max(1, quantities[row.original.id] ?? 1);
-                
+                const selectedQuantity = Math.max(
+                  1,
+                  quantities[row.original.id] ?? 1
+                );
+
                 // Si es un producto compuesto, inicializar las cantidades de los hijos
-                let processedSubRows: Array<{
-                  location: string;
-                  batch: string;
-                  available: number;
-                  quantity: number;
-                }> | undefined = undefined;
-                
+                let processedSubRows:
+                  | Array<{
+                      location: string;
+                      batch: string;
+                      available: number;
+                      quantity: number;
+                    }>
+                  | undefined = undefined;
+
                 if (row.original.subRows && row.original.subRows.length > 0) {
-                  processedSubRows = row.original.subRows.map((subRow, index) => {
-                    const key = `${row.original.id}-${index}`;
-                    const currentQuantity = subItemQuantities[key];
-                    const defaultQuantity = defaultQuantities[key];
-                    const baseQuantity = currentQuantity || defaultQuantity || 1;
-                    
-                    // Multiplicar la cantidad base por la cantidad del producto padre
-                    const finalQuantity = baseQuantity * selectedQuantity;
-                    
-                    return {
-                      location: subRow.location,
-                      batch: subRow.batch,
-                      available: subRow.available,
-                      quantity: finalQuantity,
-                      defaultQuantity: defaultQuantity || 1, // Incluir defaultQuantity
-                    };
-                  });
+                  processedSubRows = row.original.subRows.map(
+                    (subRow, index) => {
+                      const key = `${row.original.id}-${index}`;
+                      const currentQuantity = subItemQuantities[key];
+                      const defaultQuantity = defaultQuantities[key];
+                      const baseQuantity =
+                        currentQuantity || defaultQuantity || 1;
+
+                      // Multiplicar la cantidad base por la cantidad del producto padre
+                      const finalQuantity = baseQuantity * selectedQuantity;
+
+                      return {
+                        location: subRow.location,
+                        batch: subRow.batch,
+                        available: subRow.available,
+                        quantity: finalQuantity,
+                        defaultQuantity: defaultQuantity || 1, // Incluir defaultQuantity
+                      };
+                    }
+                  );
                 }
 
                 const articleToAdd = {
@@ -370,13 +421,15 @@ export function CreateTransferTable({
                 toast.success("Artículo agregado correctamente", {
                   description: (
                     <p className="text-xs sm:text-sm text-[#1A8754]">
-                      El artículo ha sido agregado correctamente al detalle de la
-                      solicitud.
+                      El artículo ha sido agregado correctamente al detalle de
+                      la solicitud.
                     </p>
                   ),
                   position: "top-right",
                   duration: 3000,
-                  icon: <CheckCircleIcon className="w-3 h-3 sm:w-4 sm:h-4 text-[#1A8754]" />,
+                  icon: (
+                    <CheckCircleIcon className="w-3 h-3 sm:w-4 sm:h-4 text-[#1A8754]" />
+                  ),
                 });
               }
             }}
@@ -418,8 +471,10 @@ export function CreateTransferTable({
 
   return (
     <div className="w-full space-y-2 sm:space-y-3 md:space-y-4 px-1 sm:px-2 md:px-4 lg:px-6 xl:px-10">
-      <h2 className="text-base sm:text-lg md:text-xl font-bold">Artículos en el Almacén</h2>
-      
+      <h2 className="text-base sm:text-lg md:text-xl font-bold">
+        Artículos en el Almacén
+      </h2>
+
       {/* Filtros responsive */}
       <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
         <div className="flex-1 relative">
@@ -437,124 +492,123 @@ export function CreateTransferTable({
         >
           Buscar
         </Button>
-      </div>
-
-      {/* Dropdown de filtros */}
-      <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              className="w-full sm:w-auto justify-between text-xs sm:text-sm h-8 sm:h-9 md:h-10 px-2 sm:px-3 md:px-4"
-            >
-              <Filter className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="truncate ml-1 sm:ml-2">{sortDescription}</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-full sm:w-auto">
-            <DropdownMenuItem
-              onClick={() =>
-                applySort(
-                  [
-                    {
-                      id: "code",
-                      desc: false,
-                    },
-                  ],
-                  "Código (A-Z)"
-                )
-              }
-            >
-              Código (A-Z)
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() =>
-                applySort(
-                  [
-                    {
-                      id: "code",
-                      desc: true,
-                    },
-                  ],
-                  "Código (Z-A)"
-                )
-              }
-            >
-              Código (Z-A)
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() =>
-                applySort(
-                  [
-                    {
-                      id: "description",
-                      desc: false,
-                    },
-                  ],
-                  "Descripción (A-Z)"
-                )
-              }
-            >
-              Descripción (A-Z)
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() =>
-                applySort(
-                  [
-                    {
-                      id: "description",
-                      desc: true,
-                    },
-                  ],
-                  "Descripción (Z-A)"
-                )
-              }
-            >
-              Descripción (Z-A)
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() =>
-                applySort(
-                  [
-                    {
-                      id: "balance",
-                      desc: false,
-                    },
-                  ],
-                  "Saldo (Menor a Mayor)"
-                )
-              }
-            >
-              Saldo (Menor a Mayor)
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() =>
-                applySort(
-                  [
-                    {
-                      id: "balance",
-                      desc: true,
-                    },
-                  ],
-                  "Saldo (Mayor a Menor)"
-                )
-              }
-            >
-              Saldo (Mayor a Menor)
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {/* Dropdown de filtros */}
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full sm:w-auto justify-between text-xs sm:text-sm h-8 sm:h-9 md:h-10 px-2 sm:px-3 md:px-4"
+              >
+                <Filter className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="truncate ml-1 sm:ml-2">{sortDescription}</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-full sm:w-auto">
+              <DropdownMenuItem
+                onClick={() =>
+                  applySort(
+                    [
+                      {
+                        id: "code",
+                        desc: false,
+                      },
+                    ],
+                    "Código (A-Z)"
+                  )
+                }
+              >
+                Código (A-Z)
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() =>
+                  applySort(
+                    [
+                      {
+                        id: "code",
+                        desc: true,
+                      },
+                    ],
+                    "Código (Z-A)"
+                  )
+                }
+              >
+                Código (Z-A)
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() =>
+                  applySort(
+                    [
+                      {
+                        id: "description",
+                        desc: false,
+                      },
+                    ],
+                    "Descripción (A-Z)"
+                  )
+                }
+              >
+                Descripción (A-Z)
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() =>
+                  applySort(
+                    [
+                      {
+                        id: "description",
+                        desc: true,
+                      },
+                    ],
+                    "Descripción (Z-A)"
+                  )
+                }
+              >
+                Descripción (Z-A)
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() =>
+                  applySort(
+                    [
+                      {
+                        id: "balance",
+                        desc: false,
+                      },
+                    ],
+                    "Saldo (Menor a Mayor)"
+                  )
+                }
+              >
+                Saldo (Menor a Mayor)
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() =>
+                  applySort(
+                    [
+                      {
+                        id: "balance",
+                        desc: true,
+                      },
+                    ],
+                    "Saldo (Mayor a Menor)"
+                  )
+                }
+              >
+                Saldo (Mayor a Menor)
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       {/* Tabla con scroll interno */}
       <div className="rounded-md border bg-[#FFFFFF] overflow-hidden">
-        <div 
+        <div
           className="overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
-          style={{ 
-            height: '400px',
-            maxHeight: '400px'
+          style={{
+            height: "400px",
+            maxHeight: "400px",
           }}
         >
           <Table className="min-w-full relative">
@@ -562,7 +616,10 @@ export function CreateTransferTable({
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id} className="text-xs sm:text-sm whitespace-nowrap">
+                    <TableHead
+                      key={header.id}
+                      className="text-xs sm:text-sm whitespace-nowrap"
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -582,7 +639,10 @@ export function CreateTransferTable({
                     className={cn(row.getIsExpanded() && "border-b-0")}
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className="p-2 sm:p-3 text-xs sm:text-sm whitespace-nowrap">
+                      <TableCell
+                        key={cell.id}
+                        className="p-2 sm:p-3 text-xs sm:text-sm whitespace-nowrap"
+                      >
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()
@@ -603,7 +663,7 @@ export function CreateTransferTable({
           </Table>
         </div>
       </div>
-      
+
       {/* Paginación responsive */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
         <div className="text-[#64748B] text-center sm:text-left text-xs sm:text-sm">
