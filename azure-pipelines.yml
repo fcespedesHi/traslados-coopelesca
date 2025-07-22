@@ -1,13 +1,51 @@
 trigger:
-- main
- 
+  branches:
+    include:
+      - main
+
 pool:
-  vmImage: ubuntu-latest
- 
+  name: Default  # Asegúrate de que este sea tu self-hosted agent pool
+
+variables:
+  NODE_VERSION: '18.x'
+  APP_DIR: '/var/www/nextapp'  # Ruta en tu servidor donde se desplegará la app
+
 steps:
-- task: vercel-deployment-task@1
-  inputs:
-    vercelProjectId: 'prj_rKtbR9o3ASZRcHhidEz49qxgVheH'
-    vercelOrgId: 'team_qHMr5tjcjmFT1ZXb9u7XWgU5'
-    vercelToken: $(VERCEL_TOKEN)
-    production: true
+  # 1. Instalar Node.js
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '$(NODE_VERSION)'
+    displayName: 'Instalar Node.js'
+
+  # 2. Instalar dependencias
+  - script: |
+      npm ci
+    displayName: 'Instalar dependencias'
+
+  # 3. Compilar la app Next.js
+  - script: |
+      npm run build
+    displayName: 'Compilar la app Next.js'
+
+  # 4. Detener servicio actual (si estás usando PM2 o systemctl)
+  - script: |
+      pm2 stop nextapp || echo "La app no estaba corriendo"
+    displayName: 'Detener la app actual (opcional)'
+
+  # 5. Copiar archivos al destino de producción
+  - script: |
+      mkdir -p $(APP_DIR)
+      cp -r .next public package.json next.config.js $(APP_DIR)/
+    displayName: 'Copiar archivos al servidor local'
+
+  # 6. Reinstalar dependencias de producción (dentro del directorio)
+  - script: |
+      cd $(APP_DIR)
+      npm ci --omit=dev
+    displayName: 'Instalar dependencias en entorno de producción'
+
+  # 7. Iniciar o reiniciar la app con PM2
+  - script: |
+      cd $(APP_DIR)
+      pm2 start npm --name "nextapp" -- start || pm2 restart nextapp
+    displayName: 'Iniciar o reiniciar la app con PM2'
