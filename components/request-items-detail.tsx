@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -54,15 +54,19 @@ function RequestItemsDetail({ articles, onRemove, onUpdateQuantity }: Props) {
   const [expanded, setExpanded] = React.useState<ExpandedState>({});
 
   // Memoizar los IDs de artículos para detectar cambios reales
-  const articleIds = React.useMemo(() => 
-    articles.map(article => article.id).sort().join(','), 
+  const articleIds = React.useMemo(
+    () =>
+      articles
+        .map((article) => article.id)
+        .sort()
+        .join(","),
     [articles]
   );
 
   // Limpiar estado de expansión solo cuando se eliminan artículos (no al actualizar cantidades)
   React.useEffect(() => {
-    const currentArticleIds = new Set(articles.map(article => article.id));
-    setExpanded(prevExpanded => {
+    const currentArticleIds = new Set(articles.map((article) => article.id));
+    setExpanded((prevExpanded) => {
       const cleanedExpanded: ExpandedState = {};
       Object.entries(prevExpanded).forEach(([key, value]) => {
         if (currentArticleIds.has(key) && value) {
@@ -72,8 +76,6 @@ function RequestItemsDetail({ articles, onRemove, onUpdateQuantity }: Props) {
       return cleanedExpanded;
     });
   }, [articleIds]); // Solo depende de los IDs, no del array completo
-
- 
 
   // Función para calcular el saldo total de un artículo
   const calculateTotalBalance = (article: Article): number => {
@@ -98,43 +100,33 @@ function RequestItemsDetail({ articles, onRemove, onUpdateQuantity }: Props) {
   };
 
   // Función para manejar el cambio de cantidad del producto padre
-  const handleParentQuantityChange = React.useCallback((article: Article, newQuantity: number) => {
-    const validQuantity = Math.max(1, newQuantity);
-    // El componente padre se encarga de la multiplicación automática de sub-items
-    onUpdateQuantity?.(article.id, validQuantity);
-  }, [onUpdateQuantity]);
-
-
+  const handleParentQuantityChange = React.useCallback(
+    (article: Article, newQuantity: number) => {
+      const validQuantity = Math.max(1, newQuantity);
+      // El componente padre se encarga de la multiplicación automática de sub-items
+      onUpdateQuantity?.(article.id, validQuantity);
+    },
+    [onUpdateQuantity]
+  );
 
   const renderSubComponent = ({ row }: { row: Row<Article> }) => {
     return (
-      <div className="p-2 sm:p-3 md:p-4 lg:p-5">
+    
         <div className="overflow-x-auto">
           <Table className="min-w-full">
-            <TableHeader>
-              <TableRow className="bg-gray-50">
-                <TableHead className="font-semibold text-gray-700 w-[50px] sm:w-[60px] text-xs sm:text-sm"></TableHead>
-                <TableHead className="font-semibold text-gray-700 w-[80px] sm:w-[100px] md:w-[120px] text-xs sm:text-sm">ID</TableHead>
-                <TableHead className="font-semibold text-gray-700 w-[200px] sm:w-[250px] md:w-[300px] lg:w-[320px] text-xs sm:text-sm">Descripción</TableHead>
-                <TableHead className="font-semibold text-gray-700 text-center w-[80px] sm:w-[90px] md:w-[100px] text-xs sm:text-sm">Disponible</TableHead>
-                <TableHead className="font-semibold text-gray-700 text-center w-[100px] sm:w-[120px] md:w-[150px] text-xs sm:text-sm">Cantidad</TableHead>
-              </TableRow>
-            </TableHeader>
             <TableBody>
               {row.original.subRows?.map((detail, index) => (
                 <TableRow key={index}>
-                  <TableCell className="text-center w-[50px] sm:w-[60px] min-w-[50px] sm:min-w-[60px] max-w-[50px] sm:max-w-[60px] p-2 sm:p-3">
-                    <div className="flex items-center justify-center">
-                      <Checkbox disabled className="h-3 w-3 sm:h-4 sm:w-4" />
-                    </div>
-                  </TableCell>
-                  <TableCell className="font-medium w-[80px] sm:w-[100px] md:w-[120px] min-w-[80px] sm:min-w-[100px] md:min-w-[120px] max-w-[80px] sm:max-w-[100px] md:max-w-[120px] p-2 sm:p-3">
+                  <TableCell className="font-medium p-2 sm:p-3">
                     <div className="truncate text-xs sm:text-sm">
                       {detail.location}
                     </div>
                   </TableCell>
-                  <TableCell className="w-[200px] sm:w-[250px] md:w-[300px] lg:w-[320px] min-w-[200px] sm:min-w-[250px] md:min-w-[300px] lg:min-w-[320px] max-w-[200px] sm:max-w-[250px] md:max-w-[300px] lg:max-w-[320px] p-2 sm:p-3">
-                    <div className="truncate text-xs sm:text-sm" title={detail.batch}>
+                  <TableCell className=" p-2 sm:p-3">
+                    <div
+                      className="text-xs min-w-[150px] sm:min-w-[200px] md:min-w-[250px] lg:min-w-[300px] max-w-[150px] sm:max-w-[200px] md:max-w-[250px] lg:max-w-[300px] sm:text-sm"
+                      title={detail.batch}
+                    >
                       {detail.batch}
                     </div>
                   </TableCell>
@@ -153,57 +145,76 @@ function RequestItemsDetail({ articles, onRemove, onUpdateQuantity }: Props) {
                       value={detail.quantity}
                       onChange={(e) => {
                         const value = parseInt(e.target.value, 10);
-                        const newQuantity = Math.max(1, isNaN(value) ? 1 : value);
-                        
-                        // Actualizar la cantidad del sub-item específico
-                        onUpdateQuantity?.(
-                          row.original.id,
-                          newQuantity,
-                          index
+                        const newQuantity = Math.max(
+                          1,
+                          isNaN(value) ? 1 : value
                         );
+
+                        // Actualizar la cantidad del sub-item específico
+                        onUpdateQuantity?.(row.original.id, newQuantity, index);
                       }}
                     />
+                  </TableCell>
+                  <TableCell className="p-2 sm:p-3">
+                    <Button size="icon" className="bg-linear-to-b from-[#DC2626] to-[#C11F1F] text-white hover:from-[#B91C1C] hover:to-[#991B1B] h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9">
+                      <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </div>
-      </div>
     );
   };
 
+  const renderSubColumns = ({row}: {row: Row<Article []>}) => {
+    () => [
+      {accessorKey: "location", header: "Ubicación"},
+      {accessorKey: "batch", header: "Lote"},
+      {accessorKey: "available", header: "Disponible"},
+      {accessorKey: "quantity", header: "Cantidad"},
+      {accessorKey: "actions", header: "Acciones"},
+    ]
+  }
+
   // Columnas de la tabla
-  const columns = React.useMemo<ColumnDef<Article>[]>(
+  const columns = useMemo<ColumnDef<Article>[]>(
     () => [
       {
-        id: "select",
-        header: () => <Checkbox disabled />,
-        cell: () => <Checkbox disabled />,
-        size: 50,
-      },
-      {
         accessorKey: "code",
-        header: "Código",
+        header: () => (
+          <div className="text-start">
+            <span className="font-bold text-xs sm:text-sm text-[#585858]">
+              Código
+            </span>
+          </div>
+        ),
         cell: ({ getValue }) => (
-          <div className="min-w-[80px] max-w-[120px] truncate">
+          <div className="min-w-[80px] max-w-[120px]">
             {String(getValue() || "-")}
           </div>
         ),
-        size: 120,
+        size: 124,
       },
       {
         accessorKey: "description",
-        header: "Descripción",
+        header: () => (
+          <div className="text-start">
+            <span className="font-bold text-xs sm:text-sm text-[#585858]">
+              Descripción
+            </span>
+          </div>
+        ),
         cell: ({ row, getValue }) => (
-          <div className="flex items-center gap-1 sm:gap-2 min-w-[150px] sm:min-w-[200px] md:min-w-[250px] lg:min-w-[300px] max-w-[150px] sm:max-w-[200px] md:max-w-[250px] lg:max-w-[300px]">
+          <div className="flex items-center min-w-[150px] sm:min-w-[200px] md:min-w-[250px] lg:min-w-[300px] max-w-[150px] sm:max-w-[200px] md:max-w-[250px] lg:max-w-[300px]">
             {row.getCanExpand() ? (
               <button
                 {...{
                   onClick: row.getToggleExpandedHandler(),
                   style: { cursor: "pointer" },
                 }}
-                className="p-0.5 sm:p-1 hover:bg-gray-100 rounded flex-shrink-0"
+                className="p-0.5 sm:p-1 hover:bg-gray-100 rounded flex-shrink-0 flex items-center gap-1"
               >
                 <ChevronRight
                   className={cn(
@@ -211,59 +222,77 @@ function RequestItemsDetail({ articles, onRemove, onUpdateQuantity }: Props) {
                     row.getIsExpanded() ? "rotate-90" : ""
                   )}
                 />
+
+                <p
+                  className={cn(
+                    "text-xs sm:text-sm text-start",
+                    row.getCanExpand()
+                      ? "font-bold text-[#004F9F] underline cursor-pointer"
+                      : ""
+                  )}
+                >
+                  {getValue<string>() || "-"}
+                </p>
               </button>
             ) : (
-              <div className="w-4 sm:w-6 flex-shrink-0"></div>
+              <div> {getValue<string>() || "-"}</div>
             )}
-            <p
-              className={cn(
-                "truncate text-xs sm:text-sm",
-                row.getCanExpand()
-                  ? "font-bold text-[#004F9F] underline cursor-pointer"
-                  : ""
-              )}
-            >
-              {getValue<string>() || "-"}
-            </p>
           </div>
         ),
-        size: 300,
+        size: 656,
       },
       {
         accessorKey: "balance",
-        header: "Saldo",
+        header: () => (
+          <div className="text-center">
+            <span className="font-bold text-xs sm:text-sm text-[#585858]">
+              Saldo
+            </span>
+          </div>
+        ),
         cell: ({ row }) => {
           const totalBalance = calculateTotalBalance(row.original);
           return (
             <div className="min-w-[50px] sm:min-w-[60px] md:min-w-[80px] text-center">
-              <span className="font-medium text-xs sm:text-sm">{totalBalance || "-"}</span>
+              <span className="font-medium text-xs sm:text-sm">
+                {totalBalance || "-"}
+              </span>
             </div>
           );
         },
-        size: 80,
+        size: 124,
       },
       {
         accessorKey: "quantity",
-        header: "Cantidad",
+        header: () => (
+          <div className="text-center">
+            <span className="font-bold text-xs sm:text-sm text-[#585858]">
+              Cantidad
+            </span>
+          </div>
+        ),
         cell: ({ row }) => {
           const totalQuantity = calculateTotalQuantity(row.original);
           const isCompound = row.getCanExpand();
-          const hasSubRows = !!row.original.subRows && row.original.subRows.length > 0;
+          const hasSubRows =
+            !!row.original.subRows && row.original.subRows.length > 0;
 
           // Usar hasSubRows directamente en lugar de isCompound para debug
           if (hasSubRows) {
             // Para artículos compuestos, mostrar input editable para el padre
             return (
-              <div className="min-w-[80px] sm:min-w-[90px] md:min-w-[100px] flex items-center gap-1 sm:gap-2">
+              <div className="flex items-center gap-1 sm:gap-2">
                 <Input
                   type="number"
                   placeholder="1"
-                  className="w-full min-w-[60px] sm:min-w-[70px] md:min-w-[80px] max-w-[80px] sm:max-w-[100px] md:max-w-[120px] h-7 sm:h-8 md:h-9 text-xs sm:text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                  min={1}
+                  className="w-[80px] mx-auto h-7 sm:h-8 md:h-9 text-xs sm:text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                   value={row.original.quantity || 1}
                   onChange={(e) => {
                     const value = parseInt(e.target.value, 10);
-                    handleParentQuantityChange(row.original, isNaN(value) ? 1 : value);
+                    handleParentQuantityChange(
+                      row.original,
+                      isNaN(value) ? 1 : value
+                    );
                   }}
                 />
               </div>
@@ -271,28 +300,37 @@ function RequestItemsDetail({ articles, onRemove, onUpdateQuantity }: Props) {
           } else {
             // Para artículos simples, mostrar input editable
             return (
-              <div className="min-w-[80px] sm:min-w-[90px] md:min-w-[100px]">
+              <div className="w-full flex">
                 <Input
                   type="number"
-                  placeholder="1"
-                  className="w-full min-w-[60px] sm:min-w-[70px] md:min-w-[80px] max-w-[80px] sm:max-w-[100px] md:max-w-[120px] h-7 sm:h-8 md:h-9 text-xs sm:text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                  min={1}
-                  max={row.original.balance || 1}
-                  value={row.original.quantity || 1}
+                  placeholder="Cantidad"
+                  className="w-[80px] mx-auto h-7 sm:h-8 md:h-9 text-xs sm:text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  value={row.original.quantity || undefined}
                   onChange={(e) => {
-                    const value = parseInt(e.target.value, 10);
-                    onUpdateQuantity?.(row.original.id, Math.max(1, isNaN(value) ? 1 : value));
+                    if (e.target.value !== undefined) {
+                      const value = parseInt(e.target.value, 10);
+                      onUpdateQuantity?.(
+                        row.original.id,
+                        Math.max(1, isNaN(value) ? 1 : value)
+                      );
+                    }
                   }}
                 />
               </div>
             );
           }
         },
-        size: 150,
+        size: 124,
       },
       {
         id: "actions",
-        header: "Acciones",
+        header: () => (
+          <div className="text-center">
+            <span className="font-bold text-xs sm:text-sm text-[#585858]">
+              Acciones
+            </span>
+          </div>
+        ),
         cell: ({ row }) => (
           <div className="min-w-[50px] sm:min-w-[60px] md:min-w-[80px] flex justify-center">
             <Button
@@ -304,7 +342,7 @@ function RequestItemsDetail({ articles, onRemove, onUpdateQuantity }: Props) {
             </Button>
           </div>
         ),
-        size: 80,
+        size: 124,
       },
     ],
     [onRemove, onUpdateQuantity, handleParentQuantityChange]
@@ -318,7 +356,8 @@ function RequestItemsDetail({ articles, onRemove, onUpdateQuantity }: Props) {
     },
     onExpandedChange: setExpanded,
     getRowCanExpand: (row) => {
-      const canExpand = !!row.original.subRows && row.original.subRows.length > 0;
+      const canExpand =
+        !!row.original.subRows && row.original.subRows.length > 0;
       return canExpand;
     },
     getCoreRowModel: getCoreRowModel(),
@@ -327,7 +366,6 @@ function RequestItemsDetail({ articles, onRemove, onUpdateQuantity }: Props) {
 
   return (
     <div className="w-full">
-      <div className="p-2 sm:p-3 md:p-4 border-b font-bold text-sm sm:text-base">Detalle de Transacción</div>
       <div className="bg-[#f8fafc] rounded-xl p-1 sm:p-2 overflow-hidden">
         <div className="overflow-x-auto">
           <Table className="min-w-full">
@@ -335,7 +373,10 @@ function RequestItemsDetail({ articles, onRemove, onUpdateQuantity }: Props) {
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id} className="text-xs sm:text-sm whitespace-nowrap">
+                    <TableHead
+                      key={header.id}
+                      className="text-xs sm:text-sm whitespace-nowrap"
+                    >
                       {flexRender(
                         header.column.columnDef.header,
                         header.getContext()
@@ -350,7 +391,7 @@ function RequestItemsDetail({ articles, onRemove, onUpdateQuantity }: Props) {
                 <TableRow>
                   <TableCell
                     colSpan={columns.length}
-                    className="py-6 sm:py-8 text-center text-gray-400 text-xs sm:text-sm"
+                    className="py-6 sm:py-8 text-center text-gray-400 bg-white text-xs sm:text-sm"
                   >
                     No se han añadido artículos a tu lista.
                   </TableCell>
@@ -362,7 +403,7 @@ function RequestItemsDetail({ articles, onRemove, onUpdateQuantity }: Props) {
                       {row.getVisibleCells().map((cell) => (
                         <TableCell
                           key={cell.id}
-                          className="p-2 sm:p-3 text-xs sm:text-sm whitespace-nowrap"
+                          className="p-2 sm:p-3 text-xs sm:text-sm bg-white whitespace-nowrap"
                         >
                           {flexRender(
                             cell.column.columnDef.cell,
@@ -373,8 +414,12 @@ function RequestItemsDetail({ articles, onRemove, onUpdateQuantity }: Props) {
                     </TableRow>
                     {row.getIsExpanded() && (
                       <TableRow>
-                        <TableCell colSpan={columns.length} className="p-0 bg-gray-50">
+                        <TableCell
+                          colSpan={columns.length}
+                          className="p-0 bg-gray-50 "
+                        >
                           {renderSubComponent({ row })}
+                          
                         </TableCell>
                       </TableRow>
                     )}

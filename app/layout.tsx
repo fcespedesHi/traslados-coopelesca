@@ -37,7 +37,7 @@ export default function RootLayout({
             <AppSidebar />
             <SidebarInset>
               <Header />
-              <section className="bg-linear-to-b from-[#F0F5F9] to-[#FÍ2F4F8]">
+              <section className="bg-linear-to-b from-[#F0F5F9] to-[#F2F4F8] min-h-screen">
                 {children}
                 <Toaster />
               </section>
