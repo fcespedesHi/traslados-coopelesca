@@ -111,72 +111,110 @@ function RequestItemsDetail({ articles, onRemove, onUpdateQuantity }: Props) {
 
   const renderSubComponent = ({ row }: { row: Row<Article> }) => {
     return (
-    
-        <div className="overflow-x-auto">
-          <Table className="min-w-full">
-            <TableBody>
-              {row.original.subRows?.map((detail, index) => (
-                <TableRow key={index}>
-                  <TableCell className="font-medium p-2 sm:p-3">
-                    <div className="truncate text-xs sm:text-sm">
-                      {detail.location}
-                    </div>
-                  </TableCell>
-                  <TableCell className=" p-2 sm:p-3">
-                    <div
-                      className="text-xs min-w-[150px] sm:min-w-[200px] md:min-w-[250px] lg:min-w-[300px] max-w-[150px] sm:max-w-[200px] md:max-w-[250px] lg:max-w-[300px] sm:text-sm"
-                      title={detail.batch}
-                    >
-                      {detail.batch}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-center w-[80px] sm:w-[90px] md:w-[100px] min-w-[80px] sm:min-w-[90px] md:min-w-[100px] max-w-[80px] sm:max-w-[90px] md:max-w-[100px] p-2 sm:p-3">
-                    <span className="inline-flex items-center justify-center min-w-[30px] sm:min-w-[35px] md:min-w-[40px] px-1 sm:px-2 py-1  rounded-md text-xs sm:text-sm font-medium">
-                      {detail.available}
-                    </span>
-                  </TableCell>
-                  <TableCell className="flex mx-auto w-full text-center w-[100px] sm:w-[120px] md:w-[150px] min-w-[100px] sm:min-w-[120px] md:min-w-[150px] max-w-[100px] sm:max-w-[120px] md:max-w-[150px] p-2 sm:p-3">
-                    <Input
-                      type="number"
-                      placeholder="0"
-                      className="w-full mx-auto max-w-[60px] sm:max-w-[70px] md:max-w-[80px] h-8 sm:h-9 md:h-10 text-xs sm:text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                      min={1}
-                      max={detail.available}
-                      value={detail.quantity}
-                      onChange={(e) => {
-                        const value = parseInt(e.target.value, 10);
-                        const newQuantity = Math.max(
-                          1,
-                          isNaN(value) ? 1 : value
-                        );
+      <div className="overflow-x-auto">
+        <Table className="min-w-full">
+          <TableBody>
+            {row.original.subRows?.map((detail, index) => (
+              <TableRow key={index}>
+                {/* location - min-w: 80px, max-w: 120px */}
+                <TableCell className="p-2 sm:p-3 text-xs sm:text-sm bg-white whitespace-nowrap min-w-[80px] max-w-[120px]">
+                  {detail.location}
+                </TableCell>
 
-                        // Actualizar la cantidad del sub-item específico
-                        onUpdateQuantity?.(row.original.id, newQuantity, index);
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell className="p-2 sm:p-3">
-                    <Button size="icon" className="bg-linear-to-b from-[#DC2626] to-[#C11F1F] text-white hover:from-[#B91C1C] hover:to-[#991B1B] h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9">
-                      <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+                {/* batch - min-w: 150px, max-w: 300px */}
+                <TableCell className="p-2 sm:p-3 text-xs sm:text-sm bg-white whitespace-nowrap min-w-[150px] sm:min-w-[200px] md:min-w-[250px] lg:min-w-[300px] max-w-[150px] sm:max-w-[200px] md:max-w-[250px] lg:max-w-[300px]">
+                  <div className="truncate" title={detail.batch}>
+                    {detail.batch}
+                  </div>
+                </TableCell>
+
+                {/* available (balance) - min-w: 80px */}
+                <TableCell className="p-2 sm:p-3 text-center text-xs sm:text-sm bg-white whitespace-nowrap min-w-[50px] sm:min-w-[60px] md:min-w-[80px]">
+                  <span className="inline-flex items-center justify-center font-medium">
+                    {detail.available}
+                  </span>
+                </TableCell>
+
+                {/* quantity input - min-w: 80px */}
+                <TableCell className="p-2 sm:p-3 bg-white whitespace-nowrap min-w-[80px]">
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    className="w-full mx-auto max-w-[80px] h-7 sm:h-8 md:h-9 text-xs sm:text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                    min={1}
+                    max={detail.available}
+                    value={detail.quantity}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value, 10);
+                      const newQuantity = Math.max(1, isNaN(value) ? 1 : value);
+                      onUpdateQuantity?.(row.original.id, newQuantity, index);
+                    }}
+                  />
+                </TableCell>
+
+                {/* action button - min-w: 80px */}
+                <TableCell className="p-2 sm:p-3 bg-white whitespace-nowrap min-w-[50px] sm:min-w-[60px] md:min-w-[80px] flex justify-center">
+                  <Button
+                    size="icon"
+                    className="bg-linear-to-b from-[#DC2626] to-[#C11F1F] text-white hover:from-[#B91C1C] hover:to-[#991B1B] h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9"
+                  >
+                    <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     );
   };
 
-  const renderSubColumns = ({row}: {row: Row<Article []>}) => {
-    () => [
-      {accessorKey: "location", header: "Ubicación"},
-      {accessorKey: "batch", header: "Lote"},
-      {accessorKey: "available", header: "Disponible"},
-      {accessorKey: "quantity", header: "Cantidad"},
-      {accessorKey: "actions", header: "Acciones"},
-    ]
-  }
+  const renderSubComponentRows = (row: Row<Article>) => {
+    return row.original.subRows?.map((detail, index) => (
+      <TableRow key={`${row.id}-subrow-${index}`} className="bg-gray-50">
+        {/* Código (repetido) */}
+        <TableCell className="min-w-[80px] max-w-[120px] text-xs sm:text-sm whitespace-nowrap">
+          {row.original.code}
+        </TableCell>
+
+        {/* Descripción */}
+        <TableCell className="min-w-[150px] sm:min-w-[200px] md:min-w-[250px] lg:min-w-[300px] max-w-[300px] text-xs sm:text-sm whitespace-nowrap">
+          {detail.batch}
+        </TableCell>
+
+        {/* Saldo */}
+        <TableCell className="min-w-[50px] sm:min-w-[60px] md:min-w-[80px] text-center text-xs sm:text-sm">
+          {detail.available}
+        </TableCell>
+
+        {/* Cantidad */}
+        <TableCell className="min-w-[80px] text-xs sm:text-sm">
+          <Input
+            type="number"
+            className="w-[80px] mx-auto h-7 sm:h-8 md:h-9 text-xs sm:text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+            min={1}
+            max={detail.available}
+            value={detail.quantity}
+            onChange={(e) => {
+              const value = parseInt(e.target.value, 10);
+              const newQuantity = Math.max(1, isNaN(value) ? 1 : value);
+              onUpdateQuantity?.(row.original.id, newQuantity, index);
+            }}
+          />
+        </TableCell>
+
+        {/* Acciones */}
+        <TableCell className="min-w-[50px] sm:min-w-[60px] md:min-w-[80px] flex justify-center">
+          <Button
+            size="icon"
+            className="bg-linear-to-b from-[#DC2626] to-[#C11F1F] text-white hover:from-[#B91C1C] hover:to-[#991B1B] h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9"
+          >
+            <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+          </Button>
+        </TableCell>
+      </TableRow>
+    ));
+  };
 
   // Columnas de la tabla
   const columns = useMemo<ColumnDef<Article>[]>(
@@ -364,6 +402,7 @@ function RequestItemsDetail({ articles, onRemove, onUpdateQuantity }: Props) {
     getExpandedRowModel: getExpandedRowModel(),
   });
 
+
   return (
     <div className="w-full">
       <div className="bg-[#f8fafc] rounded-xl p-1 sm:p-2 overflow-hidden">
@@ -412,17 +451,9 @@ function RequestItemsDetail({ articles, onRemove, onUpdateQuantity }: Props) {
                         </TableCell>
                       ))}
                     </TableRow>
-                    {row.getIsExpanded() && (
-                      <TableRow>
-                        <TableCell
-                          colSpan={columns.length}
-                          className="p-0 bg-gray-50 "
-                        >
-                          {renderSubComponent({ row })}
-                          
-                        </TableCell>
-                      </TableRow>
-                    )}
+
+                    {/* Subfilas insertadas directamente */}
+                    {row.getIsExpanded() && renderSubComponentRows(row)}
                   </React.Fragment>
                 ))
               )}
@@ -433,5 +464,4 @@ function RequestItemsDetail({ articles, onRemove, onUpdateQuantity }: Props) {
     </div>
   );
 }
-
 export default RequestItemsDetail;
