@@ -36,8 +36,8 @@ import data from "@/lib/mock_user_sim.json";
 import { Input } from "@/components/ui/input";
 
 interface ItemDetail {
-  location: string;
-  batch: string;
+  id: string;
+  name: string;
   available: number;
   quantity: number; // Cantidad requerida para cada sub-item
   defaultQuantity?: number; // Cantidad por defecto para este sub-item
@@ -137,8 +137,8 @@ function CreateRequestPage() {
                 article.subRows.forEach((newSubRow) => {
                   const existingSubRowIndex = updatedSubRows.findIndex(
                     (existing) =>
-                      existing.location === newSubRow.location &&
-                      existing.batch === newSubRow.batch
+                      existing.id === newSubRow.id &&
+                      existing.name === newSubRow.name
                   );
 
                   if (existingSubRowIndex !== -1) {

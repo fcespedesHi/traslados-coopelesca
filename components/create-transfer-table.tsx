@@ -54,8 +54,8 @@ interface Item {
 }
 
 interface ItemDetail {
-  location: string;
-  batch: string;
+  id: string;
+  name: string;
   available: number;
   quantity?: number; // Cantidad requerida para cada sub-item (opcional)
   defaultQuantity?: number; // Cantidad por defecto para este sub-item
@@ -70,8 +70,8 @@ interface CreateTransferTableProps {
     balance: number | null;
     quantity: number;
     subRows?: Array<{
-      location: string;
-      batch: string;
+      id: string;
+      name: string;
       available: number;
       quantity: number;
       defaultQuantity?: number;
@@ -81,6 +81,7 @@ interface CreateTransferTableProps {
 
 // Datos de ejemplo
 import data from "@/lib/products_example.json";
+import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
 
 export function CreateTransferTable({
   onAddArticle,
@@ -118,221 +119,139 @@ export function CreateTransferTable({
     return quantities;
   }, []); // Sin dependencias para que se calcule solo una vez
 
-  const handleSelectAll = (
-    rowId: string,
-    subRows: ItemDetail[],
-    checked: boolean
-  ) => {
-    const newSelection: { [key: string]: boolean } = {};
-    subRows.forEach((_, index) => {
-      newSelection[`${rowId}-${index}`] = checked;
-    });
-    setSubRowSelection((prev) => ({
-      ...prev,
-      ...newSelection,
-    }));
-  };
+  const renderSubComponentRows = (row: Row<Item>) => {
+    return row.original.subRows?.map((detail, index) => (
+      <TableRow key={`${row.id}-subrow-${index}`} className="bg-gray-50">
+        {/* Código */}
+        <TableCell className="min-w-[80px] max-w-[120px] text-xs sm:text-sm">
+          <div className="flex justify-start items-center w-full px-1">
+            {detail.id}
+          </div>
+        </TableCell>
 
-  const handleSelectSubRow = (
-    rowId: string,
-    subRowIndex: number,
-    checked: boolean
-  ) => {
-    const key = `${rowId}-${subRowIndex}`;
-    setSubRowSelection((prev) => ({
-      ...prev,
-      [key]: checked,
-    }));
-  };
+        {/* Descripción */}
+        <TableCell className="min-w-[150px] sm:min-w-[200px] md:min-w-[250px] lg:min-w-[300px] max-w-[300px] text-xs sm:text-sm">
+          <div className="flex flex-col">
+            <span className="truncate font-medium text-gray-700">
+              {detail.name}
+            </span>
+          </div>
+        </TableCell>
 
-  const renderSubComponent = ({ row }: { row: Row<Item> }) => {
-    const allSubRowsSelected =
-      row.original.subRows?.every(
-        (_, index) => subRowSelection[`${row.original.id}-${index}`]
-      ) || false;
+        {/* Saldo */}
+        <TableCell className="min-w-[50px] sm:min-w-[60px] md:min-w-[80px] text-center text-xs sm:text-sm">
+          {detail.available}
+        </TableCell>
 
-    const someSubRowsSelected =
-      row.original.subRows?.some(
-        (_, index) => subRowSelection[`${row.original.id}-${index}`]
-      ) || false;
+        {/* Cantidad */}
+        <TableCell className="min-w-[80px] sm:min-w-[90px] md:min-w-[100px] text-xs sm:text-sm">
+          <p className="text-center">{defaultQuantities[`${row.original.id}-${index}`]}</p>
+        </TableCell>
 
-    return (
-      <div className="p-2 sm:p-3 md:p-4 lg:p-5">
-        <div className="overflow-x-auto">
-          <Table className="min-w-full">
-            <TableHeader>
-              <TableRow className="bg-gray-50">
-                <TableHead className="font-semibold text-gray-700 w-[50px] sm:w-[60px] text-xs sm:text-sm">
-                  <div className="flex items-center justify-center">
-                    <Checkbox
-                      checked={allSubRowsSelected}
-                      onCheckedChange={(checked) =>
-                        row.original.subRows &&
-                        handleSelectAll(
-                          row.original.id,
-                          row.original.subRows,
-                          !!checked
-                        )
-                      }
-                      aria-label="Select all sub-items"
-                      className="h-3 w-3 sm:h-4 sm:w-4"
-                      data-indeterminate={
-                        someSubRowsSelected && !allSubRowsSelected
-                      }
-                    />
-                  </div>
-                </TableHead>
-                <TableHead className="font-semibold text-gray-700 w-[80px] sm:w-[100px] md:w-[120px] text-xs sm:text-sm">
-                  ID
-                </TableHead>
-                <TableHead className="font-semibold text-gray-700 w-[200px] sm:w-[250px] md:w-[300px] lg:w-[320px] text-xs sm:text-sm">
-                  Descripción
-                </TableHead>
-                <TableHead className="font-semibold text-gray-700 text-center w-[100px] sm:w-[120px] md:w-[150px] text-xs sm:text-sm">
-                  Cantidad
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {row.original.subRows?.map((detail, index) => (
-                <TableRow key={index}>
-                  <TableCell className="text-center w-[50px] sm:w-[60px] min-w-[50px] sm:min-w-[60px] max-w-[50px] sm:max-w-[60px] p-2 sm:p-3">
-                    <div className="flex items-center justify-center">
-                      <Checkbox
-                        checked={
-                          subRowSelection[`${row.original.id}-${index}`] ||
-                          false
-                        }
-                        onCheckedChange={(checked) =>
-                          handleSelectSubRow(row.original.id, index, !!checked)
-                        }
-                        aria-label={`Select sub-item ${index + 1}`}
-                        className="h-3 w-3 sm:h-4 sm:w-4"
-                      />
-                    </div>
-                  </TableCell>
-                  <TableCell className="font-medium w-[80px] sm:w-[100px] md:w-[120px] min-w-[80px] sm:min-w-[100px] md:min-w-[120px] max-w-[80px] sm:max-w-[100px] md:max-w-[120px] p-2 sm:p-3">
-                    <div className="truncate text-xs sm:text-sm">
-                      {detail.location}
-                    </div>
-                  </TableCell>
-                  <TableCell className="w-[200px] sm:w-[250px] md:w-[300px] lg:w-[320px] min-w-[200px] sm:min-w-[250px] md:min-w-[300px] lg:min-w-[320px] max-w-[200px] sm:max-w-[250px] md:max-w-[300px] lg:max-w-[320px] p-2 sm:p-3">
-                    <div
-                      className="truncate text-xs sm:text-sm"
-                      title={detail.batch}
-                    >
-                      {detail.batch}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-center w-[100px] sm:w-[120px] md:w-[150px] min-w-[100px] sm:min-w-[120px] md:min-w-[150px] max-w-[100px] sm:max-w-[120px] md:max-w-[150px] p-2 sm:p-3">
-                    <span>
-                      {subItemQuantities[`${row.original.id}-${index}`] ??
-                        defaultQuantities[`${row.original.id}-${index}`] ??
-                        1}
-                    </span>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
-    );
+        {/* Acciones */}
+        <TableCell className="min-w-[50px] sm:min-w-[60px] md:min-w-[80px] flex justify-center">
+          <div className="h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9 p-1 sm:p-1.5 md:p-2" />
+        </TableCell>
+      </TableRow>
+    ));
   };
 
   const columns: ColumnDef<Item>[] = [
     {
-      id: "select-expand",
-      header: ({ table }) => (
-        <div className="flex items-center sm:mr-2 md:mr-3 w-max pl-1">
-          <Checkbox
-            checked={table.getIsAllPageRowsSelected()}
-            onCheckedChange={(value) =>
-              table.toggleAllPageRowsSelected(!!value)
-            }
-            aria-label="Select all"
-            className="h-3 w-3 sm:h-4 sm:w-4 mx-auto"
-          />
-        </div>
-      ),
-      cell: ({ row }) => (
-        <div className="flex items-center gap-1 sm:gap-2 w-max">
-          <Checkbox
-            checked={row.getIsSelected()}
-            onCheckedChange={(value) => row.toggleSelected(!!value)}
-            aria-label="Select row"
-            onClick={(e) => e.stopPropagation()}
-            className="h-3 w-3 sm:h-4 sm:w-4 mx-auto"
-          />
-        </div>
-      ),
-      size: 50,
-    },
-    {
       accessorKey: "code",
-      header: "Código",
-      cell: ({ getValue }) => (
-        <div className="min-w-[60px] sm:min-w-[80px] md:min-w-[100px] lg:min-w-[120px] max-w-[60px] sm:max-w-[80px] md:max-w-[100px] lg:max-w-[120px] truncate text-xs sm:text-sm">
-          {getValue<string>()}
+      header: () => (
+        <div className="text-start">
+          <span className="font-bold text-xs sm:text-sm text-[#585858]">
+            Código
+          </span>
         </div>
       ),
-      size: 120,
+      cell: ({ getValue }) => (
+        <div className="min-w-[80px] max-w-[120px]">
+          {String(getValue() || "-")}
+        </div>
+      ),
+      size: 124,
     },
     {
-      accessorKey: "description",
-      header: "Descripción",
+      accessorKey: "name",
+      header: () => (
+        <div className="text-start">
+          <span className="font-bold text-xs sm:text-sm text-[#585858]">
+            Descripción
+          </span>
+        </div>
+      ),
       cell: ({ row, getValue }) => (
-        <div className="flex items-center gap-1 sm:gap-2 min-w-[150px] sm:min-w-[200px] md:min-w-[250px] lg:min-w-[300px] max-w-[150px] sm:max-w-[200px] md:max-w-[250px] lg:max-w-[300px]">
+        <div className="flex items-center min-w-[150px] sm:min-w-[200px] md:min-w-[250px] lg:min-w-[300px] max-w-[150px] sm:max-w-[200px] md:max-w-[250px] lg:max-w-[300px]">
           {row.getCanExpand() ? (
             <button
               {...{
                 onClick: row.getToggleExpandedHandler(),
                 style: { cursor: "pointer" },
               }}
-              className="p-0.5 sm:p-1 flex-shrink-0"
+              className="p-0.5 sm:p-1 hover:bg-gray-100 rounded flex-shrink-0 flex items-center gap-1"
             >
               <ChevronRight
                 className={cn(
-                  "h-3 w-3 sm:h-4 sm:w-4 transition-transform duration-200",
+                  "h-3 w-3 sm:h-4 sm:w-4 transition-transform duration-200 text-gray-600",
                   row.getIsExpanded() ? "rotate-90" : ""
                 )}
               />
+
+              <p
+                className={cn(
+                  "text-xs sm:text-sm text-start",
+                  row.getCanExpand()
+                    ? "font-bold text-[#004F9F] underline cursor-pointer"
+                    : ""
+                )}
+              >
+                {getValue<string>() || "-"}
+              </p>
             </button>
           ) : (
-            <div className="flex-shrink-0"></div>
+            <div> {getValue<string>() || ""}</div>
           )}
-          <p
-            className={cn(
-              "truncate text-xs sm:text-sm",
-              row.getCanExpand() ? "font-bold text-[#004F9F] underline" : ""
-            )}
-          >
-            {getValue<string>() || row.original.name}
-          </p>
         </div>
       ),
-      size: 300,
+      size: 656,
     },
     {
       accessorKey: "balance",
-      header: "Saldo",
+      header: () => (
+        <div className="text-center">
+          <span className="font-bold text-xs sm:text-sm text-[#585858]">
+            Saldo
+          </span>
+        </div>
+      ),
       cell: ({ getValue }) => {
         const value = getValue<number | null>();
         return (
-          <div className="w-full text-start min-w-[50px] sm:min-w-[60px] md:min-w-[80px] text-xs sm:text-sm">
-            {value === null ? "-" : value}
+          <div className="min-w-[50px] sm:min-w-[60px] md:min-w-[80px] text-center">
+            <span className="font-medium text-xs sm:text-sm">
+              {value || "-"}
+            </span>
           </div>
         );
       },
+      size: 124,
     },
     {
       id: "quantity",
-      header: "Cantidad",
+      header: () => (
+        <div className="text-center">
+          <span className="font-bold text-xs sm:text-sm text-[#585858]">
+            Cantidad
+          </span>
+        </div>
+      ),
       cell: ({ row }) => (
-        <div className="min-w-[80px] sm:min-w-[90px] md:min-w-[100px]">
+        <div className="flex items-center gap-1 sm:gap-2">
           <Input
             type="number"
-            className="w-full min-w-[60px] sm:min-w-[70px] md:min-w-[80px] max-w-[80px] sm:max-w-[100px] md:max-w-[120px] h-7 sm:h-8 md:h-9 text-xs sm:text-sm"
+            className="w-[80px] mx-auto h-7 sm:h-8 md:h-9 text-xs sm:text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500"
             min={1}
             value={quantities[row.original.id]}
             onChange={(e) => {
@@ -360,6 +279,13 @@ export function CreateTransferTable({
     },
     {
       id: "actions",
+      header: () => (
+        <div className="text-center">
+          <span className="font-bold text-xs sm:text-sm text-[#585858]">
+            Acciones
+          </span>
+        </div>
+      ),
       cell: ({ row }) => (
         <div className="min-w-[50px] sm:min-w-[60px] md:min-w-[80px] flex justify-center">
           <Button
@@ -378,8 +304,8 @@ export function CreateTransferTable({
                 // Si es un producto compuesto, inicializar las cantidades de los hijos
                 let processedSubRows:
                   | Array<{
-                      location: string;
-                      batch: string;
+                      id: string;
+                      name: string;
                       available: number;
                       quantity: number;
                     }>
@@ -398,8 +324,8 @@ export function CreateTransferTable({
                       const finalQuantity = baseQuantity * selectedQuantity;
 
                       return {
-                        location: subRow.location,
-                        batch: subRow.batch,
+                        id: subRow.id,
+                        name: subRow.name,
                         available: subRow.available,
                         quantity: finalQuantity,
                         defaultQuantity: defaultQuantity || 1, // Incluir defaultQuantity
@@ -468,6 +394,13 @@ export function CreateTransferTable({
     setSorting(sort);
     setSortDescription(description);
   };
+
+  const tableQuantities = [
+    { id: "10", name: "10" },
+    { id: "25", name: "25" },
+    { id: "50", name: "50" },
+    { id: "100", name: "100" },
+  ];
 
   return (
     <div className="w-full space-y-2 sm:space-y-3 md:space-y-4 px-1 sm:px-2 md:px-4 lg:px-6 xl:px-10">
@@ -650,13 +583,7 @@ export function CreateTransferTable({
                       </TableCell>
                     ))}
                   </TableRow>
-                  {row.getIsExpanded() && (
-                    <TableRow>
-                      <TableCell colSpan={columns.length} className="p-0">
-                        {renderSubComponent({ row })}
-                      </TableCell>
-                    </TableRow>
-                  )}
+                  {row.getIsExpanded() && renderSubComponentRows(row)}
                 </React.Fragment>
               ))}
             </TableBody>
@@ -692,6 +619,15 @@ export function CreateTransferTable({
             <span className="hidden sm:inline">Siguiente</span>
             <span className="sm:hidden">Sig</span>
           </Button>
+        </div>
+        <div className="bg-white p-1 rounded-md">
+          <ToggleGroup type="single" defaultValue={tableQuantities[0].id}>
+            {tableQuantities.map((qt) => (
+              <ToggleGroupItem key={qt.id} className="rounded-md" value={qt.id}>
+                {qt.name}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
         </div>
       </div>
     </div>

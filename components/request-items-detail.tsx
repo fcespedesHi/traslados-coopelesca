@@ -21,10 +21,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
 
 interface ItemDetail {
-  location: string;
-  batch: string;
+  id: string;
+  name: string;
   available: number;
   quantity: number; // Cantidad seleccionada para este sub-item (requerida)
   defaultQuantity?: number; // Cantidad por defecto para este sub-item
@@ -109,6 +110,13 @@ function RequestItemsDetail({ articles, onRemove, onUpdateQuantity }: Props) {
     [onUpdateQuantity]
   );
 
+  const tableQuantities = [
+    { id: "10", name: "10" },
+    { id: "25", name: "25" },
+    { id: "50", name: "50" },
+    { id: "100", name: "100" },
+  ];
+
   const renderSubComponent = ({ row }: { row: Row<Article> }) => {
     return (
       <div className="overflow-x-auto">
@@ -118,13 +126,13 @@ function RequestItemsDetail({ articles, onRemove, onUpdateQuantity }: Props) {
               <TableRow key={index}>
                 {/* location - min-w: 80px, max-w: 120px */}
                 <TableCell className="p-2 sm:p-3 text-xs sm:text-sm bg-white whitespace-nowrap min-w-[80px] max-w-[120px]">
-                  {detail.location}
+                  {detail.id}
                 </TableCell>
 
                 {/* batch - min-w: 150px, max-w: 300px */}
                 <TableCell className="p-2 sm:p-3 text-xs sm:text-sm bg-white whitespace-nowrap min-w-[150px] sm:min-w-[200px] md:min-w-[250px] lg:min-w-[300px] max-w-[150px] sm:max-w-[200px] md:max-w-[250px] lg:max-w-[300px]">
-                  <div className="truncate" title={detail.batch}>
-                    {detail.batch}
+                  <div className="truncate" title={detail.name}>
+                    {detail.name}
                   </div>
                 </TableCell>
 
@@ -179,7 +187,7 @@ function RequestItemsDetail({ articles, onRemove, onUpdateQuantity }: Props) {
 
         {/* Descripción */}
         <TableCell className="min-w-[150px] sm:min-w-[200px] md:min-w-[250px] lg:min-w-[300px] max-w-[300px] text-xs sm:text-sm whitespace-nowrap">
-          {detail.batch}
+          {detail.name}
         </TableCell>
 
         {/* Saldo */}
@@ -402,7 +410,6 @@ function RequestItemsDetail({ articles, onRemove, onUpdateQuantity }: Props) {
     getExpandedRowModel: getExpandedRowModel(),
   });
 
-
   return (
     <div className="w-full">
       <div className="bg-[#f8fafc] rounded-xl p-1 sm:p-2 overflow-hidden">
@@ -459,6 +466,46 @@ function RequestItemsDetail({ articles, onRemove, onUpdateQuantity }: Props) {
               )}
             </TableBody>
           </Table>
+        </div>
+      </div>
+      {/* Paginación responsive */}
+      <div className="flex mt-3 flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
+        <div className="text-[#64748B] text-center sm:text-left text-xs sm:text-sm">
+          Mostrando {table.getRowModel().rows.length} de {articles.length}{" "}
+          artículos
+        </div>
+        <div className="flex items-center gap-1 sm:gap-2">
+          <Button
+            variant="outline"
+            className="h-7 sm:h-8 md:h-9 px-2 sm:px-3 md:px-4 text-xs sm:text-sm"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            <span className="hidden sm:inline">Anterior</span>
+            <span className="sm:hidden">Ant</span>
+          </Button>
+          <span className="text-[#64748B] px-1 sm:px-2 text-xs sm:text-sm whitespace-nowrap">
+            {table.getState().pagination.pageIndex + 1} de{" "}
+            {table.getPageCount()}
+          </span>
+          <Button
+            variant="outline"
+            className="h-7 sm:h-8 md:h-9 px-2 sm:px-3 md:px-4 text-xs sm:text-sm"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            <span className="hidden sm:inline">Siguiente</span>
+            <span className="sm:hidden">Sig</span>
+          </Button>
+        </div>
+        <div className="bg-white p-1 border">
+          <ToggleGroup type="single" defaultValue={tableQuantities[0].id}>
+            {tableQuantities.map((qt) => (
+              <ToggleGroupItem key={qt.id} value={qt.id}>
+                {qt.name}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
         </div>
       </div>
     </div>

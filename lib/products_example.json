@@ -2,8 +2,8 @@
   {
     "id": "1",
     "code": "2-1065",
-    "name": "2-1065",
-    "description": "GANCHO S PARA HERRAJE DE...",
+    "name": "POSTES DE MADERA 25 PIES CLASE 7",
+    "description": "",
     "balance": 96
   },
   {
@@ -13,15 +13,15 @@
     "balance": null,
     "subRows": [
       {
-        "location": "2-2100",
-        "batch": "GRAPA DE HORQUILLA, CERCA DE 1 1/4 X 9",
+        "id": "2-2100",
+        "name": "GRAPA DE HORQUILLA, CERCA DE 1 1/4 X 9",
         "available": 50,
         "quantity": 0,
         "defaultQuantity": 14
       },
       {
-        "location": "2-2100",
-        "batch": "GRAPA CONEXION A VARILLA",
+        "id": "2-2100",
+        "name": "GRAPA CONEXION A VARILLA",
         "available": 50,
         "defaultQuantity": 6
       }
@@ -30,20 +30,20 @@
   {
     "id": "3",
     "code": "2-2140",
-    "name": "2-2140",
-    "description": "POSTES DE MADERA 25 PIES,...",
+    "name": "VARILLA DE CONEXION A TIERRA",
+    "description": "",
     "balance": 125
   },
   {
     "id": "4",
     "code": "2-2150",
-    "name": "2-2150",
-    "description": "POSTES DE MADERA 30 PIES,...",
+    "name": "VM3_45_2",
+    "description": "",
     "balance": 14,
     "subRows": [
       {
-        "location": "Patio Exterior",
-        "batch": "LOTE-P01",
+        "id": "P-42532",
+        "name": "CABLE #4 ALUMINIO",
         "available": 14,
         "quantity": 0,
         "defaultQuantity": 2
@@ -52,23 +52,23 @@
   },
   {
     "id": "5",
-    "code": "2-2340",
-    "name": "2-2340",
-    "description": "REGULADOR DE VOLTAGE 100...",
+    "code": "VM3_45_2",
+    "name": "TUBO HG DE 2 PULGADAS (1.5 METROS)",
+    "description": "",
     "balance": 3
   },
   {
     "id": "6",
     "code": "2-2500",
-    "name": "2-2500",
-    "description": "VARILLA CONEXION A TIERRA...",
+    "name": "GANCHO S PARA HERRAJE DE SUJECIÓN",
+    "description": "",
     "balance": 2
   },
   {
     "id": "7",
     "code": "2-2647",
-    "name": "2-2647",
-    "description": "TUBO HG DE 2 PULGADAS (1.5...",
+    "name": "REGULADOR DE VOLTAGE 100 AMP 14.4 KV",
+    "description": "",
     "balance": 7
   }
 ]
