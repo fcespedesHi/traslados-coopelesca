@@ -498,7 +498,7 @@ function RequestItemsDetail({ articles, onRemove, onUpdateQuantity }: Props) {
             <span className="sm:hidden">Sig</span>
           </Button>
         </div>
-        <div className="bg-white p-1 border">
+        <div className="bg-white p-1">
           <ToggleGroup type="single" defaultValue={tableQuantities[0].id}>
             {tableQuantities.map((qt) => (
               <ToggleGroupItem key={qt.id} value={qt.id}>

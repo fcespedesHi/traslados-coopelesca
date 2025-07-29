@@ -167,7 +167,7 @@ export function RequestForm({
       )}
       
       {/* Sección de detalles de la solicitud */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-[#F9F9F9] border-[#ECECEC] p-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-[#F9F9F9] border-[#ECECEC] px-6">
         {/* Código de solicitud */}
         <div className="space-y-2">
           <Label htmlFor="request-code" className="text-sm font-medium text-gray-700">
@@ -220,7 +220,7 @@ export function RequestForm({
       </div>
 
       {/* Sección de datos de la solicitud */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-[#F9F9F9] p-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-[#F9F9F9] px-6">
         {/* Row 1 */}
         <div className="space-y-2">
           <Label

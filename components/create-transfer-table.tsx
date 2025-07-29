@@ -536,9 +536,9 @@ export function CreateTransferTable({
       </div>
 
       {/* Tabla con scroll interno */}
-      <div className="rounded-md border bg-[#FFFFFF] overflow-hidden">
+      <div className="rounded-md border bg-[#FFFFFF] overflow-auto">
         <div
-          className="overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+          className="overflow-hidden scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
           style={{
             height: "400px",
             maxHeight: "400px",

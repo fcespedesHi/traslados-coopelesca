@@ -10,7 +10,7 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Filter, ListChecksIcon, PlusIcon } from "lucide-react";
+import { AlertTriangle, Filter, ListChecksIcon, PlusIcon, Trash2 } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -34,6 +34,17 @@ const generateRandomCode = (): string => {
 
 import data from "@/lib/mock_user_sim.json";
 import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface ItemDetail {
   id: string;
@@ -68,8 +79,6 @@ function CreateRequestPage() {
   const [proyecto, setProyecto] = useState("");
   const [observaciones, setObservaciones] = useState("");
   const [ordenTrabajo, setOrdenTrabajo] = useState("");
-
-  const [sideListOpen, setSideListOpen] = useState(true);
 
   // Estado global de artículos seleccionados
   const [selectedArticles, setSelectedArticles] = useState<Article[]>([]);
@@ -195,15 +204,32 @@ function CreateRequestPage() {
     [handleSave]
   );
 
-  // Quitar artículo (desde el sidebar)
-  const handleRemoveArticle = useCallback(
-    (id: string) => {
-      setSelectedArticles((prev) => prev.filter((a) => a.id !== id));
-      //autoguardar cada que se quita un artículo
-      handleSave();
-    },
-    [handleSave]
-  );
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [articleToDelete, setArticleToDelete] = useState<string | null>(null);
+
+  // Quitar artículo (desde el sidebar) - Abrir confirmación
+  const handleRemoveArticle = useCallback((id: string) => {
+    setArticleToDelete(id);
+    setConfirmDelete(true);
+  }, []);
+
+  // Confirmar eliminación
+  const confirmRemoveArticle = useCallback(() => {
+    if (articleToDelete) {
+      setSelectedArticles((prev) =>
+        prev.filter((a) => a.id !== articleToDelete)
+      );
+      handleSave(); // autosave cuando se elimina un articulo
+    }
+    setConfirmDelete(false);
+    setArticleToDelete(null);
+  }, [articleToDelete, handleSave]);
+
+  // Cancelar eliminación
+  const cancelRemoveArticle = useCallback(() => {
+    setConfirmDelete(false);
+    setArticleToDelete(null);
+  }, []);
 
   // Actualizar cantidad de artículos
   const handleUpdateQuantity = useCallback(
@@ -319,14 +345,19 @@ function CreateRequestPage() {
 
             <div className="flex justify-between">
               <div className="flex items-center gap-2">
-                <Input className="min-w-xs" placeholder="Código, descripción, ubicación" />
+                <Input
+                  className="min-w-xs"
+                  placeholder="Código, descripción, ubicación"
+                />
                 <Button className="bg-gradient-to-b from-[#004F9F] to-[#003871] text-white">
                   Buscar
                 </Button>
               </div>
 
               <div className="flex items-center gap-2">
-                <Button className="bg-white text-black border border-gray-300/40 hover:bg-gray-100 cursor-pointer"><Filter/> Filtrar Lista</Button>
+                <Button className="bg-white text-black border border-gray-300/40 hover:bg-gray-100 cursor-pointer">
+                  <Filter /> Filtrar Lista
+                </Button>
                 <SheetTrigger asChild>
                   <Button className="bg-gradient-to-b from-[#004F9F] to-[#003871] text-white">
                     <PlusIcon /> Agregar Artículos
@@ -382,6 +413,37 @@ function CreateRequestPage() {
           </Button>
         </div>
       </div>
+      <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <div className="flex items-center gap-2">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+                <AlertTriangle className="h-6 w-6 text-red-600" />
+              </div>
+              <div>
+                <AlertDialogTitle className="text-left">
+                  ¿Eliminar producto?
+                </AlertDialogTitle>
+              </div>
+            </div>
+          </AlertDialogHeader>
+          <AlertDialogDescription className="text-start text-md ">
+                  ¿Estás seguro que deseas eliminar este producto?
+                </AlertDialogDescription>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={cancelRemoveArticle} className="cursor-pointer">
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmRemoveArticle}
+              className="bg-red-600 hover:bg-red-700 cursor-pointer"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
